@@ -14,3 +14,6 @@ affil <- fread(raw[grepl('affil', raw)])
 aggr <- fread(raw[grepl('agg', raw)])
 asso <- fread(raw[grepl('asso', raw)])
 egos <- fread(raw[grepl('egos', raw)])
+
+
+### Process ----
