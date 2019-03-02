@@ -10,6 +10,7 @@ lapply(libs, require, character.only = TRUE)
 raw <- dir('data/raw-data', full.names = TRUE)
 
 asso <- fread(raw[grepl('asso', raw)])
+egos <- fread(raw[grepl('egos', raw)])
 
 ### Prep ----
 # Date columns
