@@ -30,11 +30,16 @@ egos[, period_end := as.IDate(period_end)]
 # Cast session to an integer group column
 asso[, group := .GRP, session]
 
-# Build group by individual matrix
-gbiMtrx <- get_gbi(asso, group = 'group', id = 'hyena')
+lapply(asso[, unique(year(sessiondate))], function(yr){
+	# Build group by individual matrix
+	gbiMtrx <- get_gbi(asso[year(sessiondate) == yr],
+										 group = 'group', id = 'hyena')
 
-## Generate observed network
-#TODO: what association index?
-net <- get_network(gbiMtrx,
-									 data_format = "GBI",
-									 association_index = "SRI")
+
+	## Generate observed network
+	#TODO: what association index?
+	net <- get_network(gbiMtrx,
+										 data_format = "GBI",
+										 association_index = "SRI")
+})
+
