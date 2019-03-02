@@ -13,13 +13,9 @@ aggr <- fread(raw[grepl('agg', raw)])
 egos <- fread(raw[grepl('egos', raw)])
 
 ### Prep ----
-affil[, sessiondate := as.IDate(sessiondate)]
-affil[, grtTime := as.ITime(grtTime)]
-
 aggr[, sessiondate := as.IDate(sessiondate)]
 aggr[, aggressiontime := as.ITime(aggressiontime)]
 
-asso[, sessiondate := as.IDate(sessiondate)]
+### Observed ----
+#TODO: how do we build affiliation networks?
 
-egos[, period_start := as.IDate(period_start)]
-egos[, period_end := as.IDate(period_end)]
