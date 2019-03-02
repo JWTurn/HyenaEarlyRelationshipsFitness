@@ -1,4 +1,4 @@
-### Hyena/Spatsoc ====
+### Hyena/Spatsoc - Association ====
 # Alec Robitaille
 # March 01 2019
 
@@ -9,30 +9,22 @@ lapply(libs, require, character.only = TRUE)
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
 
-affil <- fread(raw[grepl('affil', raw)])
-aggr <- fread(raw[grepl('agg', raw)])
 asso <- fread(raw[grepl('asso', raw)])
-egos <- fread(raw[grepl('egos', raw)])
 
 ### Prep ----
-affil[, sessiondate := as.IDate(sessiondate)]
-affil[, grtTime := as.ITime(grtTime)]
-
-aggr[, sessiondate := as.IDate(sessiondate)]
-aggr[, aggressiontime := as.ITime(aggressiontime)]
-
+# Date columns
 asso[, sessiondate := as.IDate(sessiondate)]
+asso[, yr := year(sessiondate)]
+asso[, datetime := as.POSIXct(sessiondate)]
 
-egos[, period_start := as.IDate(period_start)]
-egos[, period_end := as.IDate(period_end)]
-
-### Association ----
-## Observed
 # Cast session to an integer group column
 asso[, group := .GRP, session]
 
 # TODO: why nulls in sessiondate?
 asso <- asso[!is.na(year(sessiondate))]
+
+### Association ----
+## Observed
 yearLs <- asso[, unique(year(sessiondate))]
 
 netLs <- lapply(yearLs, function(yr) {
@@ -66,10 +58,6 @@ association
 ## Random+Observed
 # Daily type randomizations
 # (within each day, randomize individuals)
-
-asso[, yr := year(sessiondate)]
-asso[, datetime := as.POSIXct(sessiondate)]
-
 n <- 3
 randDaily <- randomizations(
 	asso,
