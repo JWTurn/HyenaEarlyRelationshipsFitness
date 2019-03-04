@@ -17,5 +17,5 @@ aggr[, sessiondate := as.IDate(sessiondate)]
 aggr[, aggressiontime := as.ITime(aggressiontime)]
 
 ### Observed ----
-#TODO: how do we build affiliation networks?
+#TODO: how do we build aggression networks?
 
