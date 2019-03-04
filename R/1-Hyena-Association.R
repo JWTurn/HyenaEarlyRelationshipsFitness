@@ -67,9 +67,16 @@ mets <- lapply(seq_along(netLs), function(n) {
 	g <- graph.adjacency(netLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
+	# TODO: Are these the network metrics you want? Add them here...
+	# degree, outdegree, indegree, strength, outstrength, instrength, betweenness
 	data.table(
-		centrality = evcent(g)$vector,
-		strength = graph.strength(g),
+		degree = degree(g),
+		outdegree = degree(g, mode = 'out'),
+		indegree = degree(g, mode = 'in'),
+		strength = strength(g),
+		outstrength = strength(g, mode = 'out'),
+		instrength = strength(g, mode = 'in'),
+		betweenness = betweenness(g, directed = FALSE),
 		ID = names(degree(g)),
 		iteration = iterYearLs$iter[[n]],
 		yr = iterYearLs$yr[[n]]
@@ -84,7 +91,6 @@ out[, observed := ifelse(iteration == 0, TRUE, FALSE)]
 
 ## Mean values for each individual and year, by observed/random
 meanMets <- out[, lapply(.SD, mean), by = .(ID, yr, observed),
-								.SDcols = c('centrality', 'strength')]
+								.SDcols = colnames(out)[1:7]]
 
-
-
+saveRDS(meanMets, 'data/derived-data/mean-mets-association.Rds')
