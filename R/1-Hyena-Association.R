@@ -28,37 +28,6 @@ asso[, group := .GRP, session]
 asso <- asso[!is.na(year(sessiondate))]
 
 ### Association ----
-## Observed
-yearLs <- asso[, unique(year(sessiondate))]
-
-netLs <- lapply(yearLs, function(yr) {
-	# Build group by individual matrix
-	gbiMtrx <- get_gbi(asso[year(sessiondate) == yr],
-										 group = 'group', id = 'hyena')
-
-	## Generate observed network
-	#TODO: what association index?
-	net <- get_network(gbiMtrx,
-										 data_format = "GBI",
-										 association_index = "SRI")
-})
-
-mets <- lapply(seq_along(netLs), function(n) {
-	g <- graph_from_adjacency_matrix(netLs[[n]], 'undirected',
-											 diag = FALSE, weighted = TRUE)
-
-	#TODO: which network metrics?
-	data.table(
-		centrality = eigen_centrality(g)$vector,
-		strength = strength(g),
-		ID = names(degree(g)),
-		yr = yearLs[[n]]
-	)
-})
-
-association <- rbindlist(mets)
-association
-
 ## Random+Observed
 # Daily type randomizations
 # (within each day, randomize individuals)
@@ -91,7 +60,7 @@ y = iterYearLs$yr
 ## Generate a list of random networks
 #TODO: what kind of association index?
 netLs <- lapply(gbiLs, FUN = get_network,
-								data_format = "GBI", association_index = "SRI")
+								data_format = "GBI", association_index = "HWI")
 
 ## Generate graph and calculate network metrics
 mets <- lapply(seq_along(netLs), function(n) {
@@ -116,3 +85,38 @@ out[, observed := ifelse(iteration == 0, TRUE, FALSE)]
 ## Mean values for each individual and year, by observed/random
 meanMets <- out[, lapply(.SD, mean), by = .(ID, yr, observed),
 								.SDcols = c('centrality', 'strength')]
+
+
+
+
+### For your own interest... ----
+## Observed
+yearLs <- asso[, unique(year(sessiondate))]
+
+netLs <- lapply(yearLs, function(yr) {
+	# Build group by individual matrix
+	gbiMtrx <- get_gbi(asso[year(sessiondate) == yr],
+										 group = 'group', id = 'hyena')
+
+	## Generate observed network
+	#TODO: what association index?
+	net <- get_network(gbiMtrx,
+										 data_format = "GBI",
+										 association_index = "SRI")
+})
+
+mets <- lapply(seq_along(netLs), function(n) {
+	g <- graph_from_adjacency_matrix(netLs[[n]], 'undirected',
+																	 diag = FALSE, weighted = TRUE)
+
+	#TODO: which network metrics?
+	data.table(
+		centrality = eigen_centrality(g)$vector,
+		strength = strength(g),
+		ID = names(degree(g)),
+		yr = yearLs[[n]]
+	)
+})
+
+association <- rbindlist(mets)
+association
