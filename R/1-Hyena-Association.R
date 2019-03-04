@@ -2,6 +2,9 @@
 # Alec Robitaille
 # March 01 2019
 
+### Notes ----
+# undirected, Twice weight index
+
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph')
 lapply(libs, require, character.only = TRUE)

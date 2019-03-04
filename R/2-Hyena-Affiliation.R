@@ -2,6 +2,9 @@
 # Alec Robitaille
 # March 01 2019
 
+### Notes ----
+# directed, count of affiliations during period/AI during period
+
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph')
 lapply(libs, require, character.only = TRUE)
