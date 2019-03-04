@@ -88,35 +88,3 @@ meanMets <- out[, lapply(.SD, mean), by = .(ID, yr, observed),
 
 
 
-
-### For your own interest... ----
-## Observed
-yearLs <- asso[, unique(year(sessiondate))]
-
-netLs <- lapply(yearLs, function(yr) {
-	# Build group by individual matrix
-	gbiMtrx <- get_gbi(asso[year(sessiondate) == yr],
-										 group = 'group', id = 'hyena')
-
-	## Generate observed network
-	#TODO: what association index?
-	net <- get_network(gbiMtrx,
-										 data_format = "GBI",
-										 association_index = "SRI")
-})
-
-mets <- lapply(seq_along(netLs), function(n) {
-	g <- graph_from_adjacency_matrix(netLs[[n]], 'undirected',
-																	 diag = FALSE, weighted = TRUE)
-
-	#TODO: which network metrics?
-	data.table(
-		centrality = eigen_centrality(g)$vector,
-		strength = strength(g),
-		ID = names(degree(g)),
-		yr = yearLs[[n]]
-	)
-})
-
-association <- rbindlist(mets)
-association
