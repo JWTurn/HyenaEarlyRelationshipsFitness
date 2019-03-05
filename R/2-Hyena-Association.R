@@ -24,8 +24,8 @@ asso[, datetime := as.POSIXct(sessiondate)]
 # Cast session to an integer group column
 asso[, group := .GRP, session]
 
-# TODO: why nulls in sessiondate?
-asso <- asso[!is.na(year(sessiondate))]
+idCol <- 'idlife'
+groupCol <- 'group'
 
 ### Association ----
 ## Random+Observed
