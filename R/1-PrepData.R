@@ -1,4 +1,4 @@
-### Prep Data ====
+### Prep Hyena Data ====
 # Alec Robitaille
 # Started: March 05 2019
 
@@ -40,17 +40,14 @@ warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 affillife <- allstages[between(sessiondate, period_start, period_end)]
 
 ## Merge all lifestages in 'life' to aggression data --
-# TODO: do we want to merge the life stage of the solicitor or the receiver?
+# TODO: do we want to merge the life stage of the aggressor or the recip?
 allstages <- merge(aggr, life,
-									 by.x = 'll_solicitor', by.y = 'ego',
+									 by.x = 'aggressor', by.y = 'ego',
 									 allow.cartesian = TRUE)
 
 # Compare sessiondate to period start+end
-warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
-affillife <- allstages[between(sessiondate, period_start, period_end)]
-
-
-aggr
+warning(aggr[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
+aggrlife <- allstages[between(sessiondate, period_start, period_end)]
 
 ### Output ----
 # Add idlife col
