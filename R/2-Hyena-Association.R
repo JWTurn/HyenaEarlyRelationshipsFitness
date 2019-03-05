@@ -13,6 +13,7 @@ lapply(libs, require, character.only = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
 asso <- readRDS(derived[grepl('association-life', derived)])
+### so now, this is only calling asssociations who those who were egos (subjects of interest), it's missing the rest of the clan
 
 ### Prep ----
 # Date columns

@@ -12,6 +12,7 @@ raw <- dir('data/raw-data', full.names = TRUE)
 ## Life stages
 life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
 
+
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
 
@@ -31,6 +32,9 @@ assolife <- allstages[between(sessiondate, period_start, period_end)]
 
 ## Merge all lifestages in 'life' to affiliation data --
 # TODO: do we want to merge the life stage of the solicitor or the receiver?
+# not sure, the ego can be both the solicitor and the receiver which affects the in/out metrics.
+#If it's arbitrary, I would just do the solicitor,
+#but if it's a unique individual, then it should be the same in both columns, otherwise xxx-CD could interact with xxx, which would be itself
 allstages <- merge(affil, life,
 									 by.x = 'll_solicitor', by.y = 'ego',
 									 allow.cartesian = TRUE)
