@@ -23,6 +23,7 @@ allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
 									 allow.cartesian = TRUE)
 # Compare sessiondate to period start+end
+# NOTE: NAs in sessiondate are dropped here
 assolife <- allstages[between(sessiondate, period_start, period_end)]
 
 # Generate ID-life stage
