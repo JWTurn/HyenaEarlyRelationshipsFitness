@@ -10,10 +10,9 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-raw <- dir('data/raw-data', full.names = TRUE)
+derived <- dir('data/derived-data', full.names = TRUE)
 
-asso <- fread(raw[grepl('asso', raw)])
-egos <- fread(raw[grepl('/egos.csv', raw)])
+asso <- readRDS(derived[grepl('association-life', derived)])
 
 ### Prep ----
 # Date columns
@@ -35,8 +34,8 @@ n <- 3
 randDaily <- randomizations(
 	asso,
 	type = 'daily',
-	id = 'hyena',
-	group = 'group',
+	id = idCol,
+	group = groupCol,
 	datetime = 'datetime',
 	iterations = n,
 	splitBy = 'yr'
@@ -51,7 +50,7 @@ iterYearLs <- unique(randDaily[, .(iteration, yr)])
 # 'randomID' used instead of observed ID (type = 'step')
 gbiLs <- mapply(FUN = function(i, y) {
 	get_gbi(randDaily[iteration == i & yr == y],
-					'group', 'randomID')
+					groupCol, 'randomID')
 },
 i = iterYearLs$iter,
 y = iterYearLs$yr
@@ -85,12 +84,13 @@ mets <- lapply(seq_along(netLs), function(n) {
 
 ## Observed and random for all individuals across all iterations and years
 out <- rbindlist(mets)
+setnames(out, 'ID', idCol)
 
 ## Split observed and random
 out[, observed := ifelse(iteration == 0, TRUE, FALSE)]
 
 ## Mean values for each individual and year, by observed/random
-meanMets <- out[, lapply(.SD, mean), by = .(ID, yr, observed),
+meanMets <- out[, lapply(.SD, mean), by = .(get(idCol), yr, observed),
 								.SDcols = colnames(out)[1:7]]
 
 saveRDS(meanMets, 'data/derived-data/mean-mets-association.Rds')
