@@ -37,9 +37,9 @@ rmColsAsso <- c('period_start', 'period_end', 'mom_alive',
 assolife[, (rmColsAsso) := NULL]
 
 
-
-
 # Check output data
+if(anyDuplicated(assolife) != 0) stop('duplicated rows found')
+if (assolife[is.na(idlife), .N] != 0) stop('NAs found in id+life stage')
 
 
 # Output to derived-data
