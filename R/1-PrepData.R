@@ -29,10 +29,6 @@ allstages <- merge(asso, life,
 warning(asso[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 assolife <- allstages[between(sessiondate, period_start, period_end)]
 
-# Generate ID-life stage
-assolife[, idlife := paste(hyena, period, sep = '-')]
-
-
 ## Merge all lifestages in 'life' to affiliation data --
 # TODO: do we want to merge the life stage of the solicitor or the receiver?
 allstages <- merge(affil, life,
@@ -43,10 +39,27 @@ allstages <- merge(affil, life,
 warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 affillife <- allstages[between(sessiondate, period_start, period_end)]
 
-# Generate ID-life stage
-affillife[, idlife := paste(ll_solicitor, period, sep = '-')]
+## Merge all lifestages in 'life' to aggression data --
+# TODO: do we want to merge the life stage of the solicitor or the receiver?
+allstages <- merge(aggr, life,
+									 by.x = 'll_solicitor', by.y = 'ego',
+									 allow.cartesian = TRUE)
+
+# Compare sessiondate to period start+end
+warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
+affillife <- allstages[between(sessiondate, period_start, period_end)]
+
+
+aggr
 
 ### Output ----
+# Add idlife col
+add_paste_id <- function(DT, xcol, ycol = 'period') {
+	DT[, 'idlife' := paste(get(xcol), get(ycol), sep = '-')]
+}
+add_paste_id(assolife, 'hyena')
+add_paste_id(affillife, 'll_solicitor')
+
 # Check output data
 check_dup <- function(DT) {
 	if (anyDuplicated(DT) != 0) stop('duplicated rows found in asso')
