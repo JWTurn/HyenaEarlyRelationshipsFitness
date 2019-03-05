@@ -90,7 +90,7 @@ setnames(out, 'ID', idCol)
 out[, observed := ifelse(iteration == 0, TRUE, FALSE)]
 
 ## Mean values for each individual and year, by observed/random
-meanMets <- out[, lapply(.SD, mean), by = .(get(idCol), yr, observed),
+meanMets <- out[, lapply(.SD, mean), by = c(idCol, 'yr', 'observed'),
 								.SDcols = colnames(out)[1:7]]
 
 saveRDS(meanMets, 'data/derived-data/mean-mets-association.Rds')
