@@ -18,25 +18,20 @@ affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
 aggr <- fread(raw[grepl('aggressions.csv', raw)], drop = 'V1')
 
 ### Join life stages ----
-## Set keys on lifestages
+# Merge all lifestages in 'life' to association data
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
 									 allow.cartesian = TRUE)
+# Compare sessiondate to period start+end
 assolife <- allstages[between(sessiondate, period_start, period_end)]
 
 ### Output ----
-rmCols <-
-	c(
-		'period_start',
-		'period_end',
-		'mom_alive',
-		'prey_level',
-		'ego_period_rank',
-		"seq",
-		"mom_period_rank",
-		"clan_size",
-		"sessions_count",
-		"sessions_alone"
-	)
-assolife[, (rmCols) := NULL]
-colnames(assolife)
+# Drop excess columns
+rmColsAsso <- c('period_start', 'period_end', 'mom_alive',
+								'prey_level', 'ego_period_rank', 'seq',
+								'mom_period_rank', 'clan_size', 'sessions_count',
+								'sessions_alone')
+assolife[, (rmColsAsso) := NULL]
+
+# Output to derived-data
+saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
