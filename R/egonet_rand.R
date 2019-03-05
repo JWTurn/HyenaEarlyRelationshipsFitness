@@ -8,22 +8,28 @@ library("sna")
 library("plyr")
 
 ##### necessary tables  ### still need to link them in
+
+## I haven't linked these in yet because I'm still learining how you work, but these are the names of .csvs I've sent you already, I imagine we can just fread() them in
+## these are all referenced in the code below that used to be read in from the SQL db, which is why I sent them as .csv now
 lifeperiods
 lifperiods_clanlists
 egos
+# these are the edge lists used to build networks
 lifeperiods_ais_el
 lifeperiods_aggressions_el
 lifeperiods_ll_el
 
 ####### basic functions
 
+# looks up vertex names so I can find my ego
+
 is.vertex  = function(net,n) {
-  # look up vertex by name in network 
+  # look up vertex by name in network
   # convenience function to remember this syntax
   return(n %in% network.vertex.names(net))
 }
 
-
+# actually finds my ego among the vertex names
 get.vertex.id <- function(net,name){
   return(
     match(name,get.vertex.attribute(net, "vertex.names"))
@@ -34,14 +40,14 @@ get.vertex.id <- function(net,name){
 
 #### data functions: adapted from extract edgelists from SQL
 
-
+# returns the subset of the specific period for a specific individual from the edge list
 one_period <- function(gdf,ego,period){
   # Given a data frame with an edge list partitioned on an ego and period, return a subset
   edgelist.df = gdf[gdf$ego ==ego & gdf$period == period,c("H1","H2","weight")]
-  return(edgelist.df)  
+  return(edgelist.df)
 }
 
-
+# determines list of all clan member that would be possible to interact with during the ego's specified period with other information about the other hyenas in the clan
 get.clanlist <- function(ego,period) {
   clanlists.df = lifeperiods_clanlists
   clanlist = clanlists.df[clanlists.df$ego ==ego & clanlists.df$period == period,c("hyena","hyenarank","sex","hyenaAgeAtStart")]
@@ -50,50 +56,53 @@ get.clanlist <- function(ego,period) {
   return(clanlist)
 }
 
+# gets the specific clan list
 one_clanlist <- function(ego,period){
   return(get.clanlist(ego,period))
 }
 
 
 ### graph functions
-# used to subset edgelist by ego and period assumes 
 
+# used to subset edgelist by ego and period and creates networks from the edgelists ***this is what builds the networks
+# gdf (graph data frame) -- edge list
+# ego -- specific (list of) ego(s)
+# period -- specific (list of) periods(s)
 one_graph <- function(gdf,ego,period,directedgraph=FALSE){
   # Given edge list data frame gdf  partitioned on an ego and period, subset and get network
-  
+
   edgelist.df   = one_period(gdf,ego,period)
-  # check if no data for this period/individual 
+  # check if no data for this period/individual
   if (nrow(edgelist.df) == 0) { return(NA)}
-  
-  h_attrs       = one_clanlist(ego,period) # needs to be a list
+
+  h_attrs       = one_clanlist(ego,period) # this is a list of attributes of hyenas, needs to be a list
   net = network(edgelist.df,vertex.attr=h_attrs, matrix.type="edgelist", directed=directedgraph,ignore.eval = FALSE, names.eval = "weight" )
   # network.edgelist(x, g, ignore.eval = TRUE, names.eval = NULL, ...)
   set.network.attribute(net, "ego", ego)
   set.network.attribute(net, "period", period)
-  
+
   return(net)
 }
 
 
 # I renamed these functions for consistency
 # saving alias to not break downstream code
-onePeriod <- one_period 
-one.graph <- one_graph 
+onePeriod <- one_period
+one.graph <- one_graph
 is_vertex <- is.vertex
 
-analysis_that_used_longevity <- function(df){
-  newdf = df[is.na(df$longevity),]
-}
+#other functions that aren't in use here (yet)
 
+# categorizies the standarized ranks assigned to hyenas
 rank_category <-function(sr){
-  # if out of range, eg. invalid number return blank 
+  # if out of range, eg. invalid number return blank
   # should return NA
   if( sr < -1    ) ''
-  else if( sr < -0.33 ) 'low' 
+  else if( sr < -0.33 ) 'low'
   else if( sr <  0.33 ) 'mid'
   else if( sr <= 1.0  ) 'high'
   else ''
-  
+
 }
 
 # converts the above formula to use on a whole vector or column in a data frame
@@ -102,10 +111,10 @@ rank_categories <- Vectorize(rank_category, vectorize.args="sr")
 
 
 #####################
-# graph statistics 
-# these function return a list of stats of interest
+# graph statistics
+# these functions return a list of metrics of interest
 # and a means to systematicaly get an associated function or column name
-# it means there needst to exist functions for each stat
+# it means there needs to exist functions for each stat
 
 
 calc_net_stat = function(statname,net,ego,directed=FALSE) {
@@ -113,10 +122,10 @@ calc_net_stat = function(statname,net,ego,directed=FALSE) {
   # if ego not in network, return 0
   if (!is.vertex(net,ego)) {return(0)}
   # then do some setup
-  netu<-as.sociomatrix(net)
-  netw<-as.sociomatrix(net, 'weight')
+  netu<-as.sociomatrix(net) # unweighted network
+  netw<-as.sociomatrix(net, 'weight') # weighted network (this is just how 'sna' works)
   gmode_code = if (directed) "digraph" else "graph"
-  nodeid = get.vertex.id(net,ego)
+  nodeid = get.vertex.id(net,ego) # lets it know the ego of interest
   # make the calculation, default answer is 0
   s = 0
   s = switch(statname,
@@ -135,10 +144,11 @@ calc_net_stat = function(statname,net,ego,directed=FALSE) {
 
 ####################
 #  stat accumulator
-
+# list of metrics used in this analysis (this has grown and shrunk depending on what project I'm working on)
 statnames <- function(){
   return (c("degree", "indegree", "outdegree", "strength","instrength","outstrength","betweenness"))
 }
+# names the resulting columns of metrics in the dataframe to be
 statcolname   <- function(statname,prefix="") {
   if (is.na(prefix) && length(prefix) == 0) return(statname)
   else return(paste(prefix, statname, sep="_"))
@@ -150,18 +160,19 @@ standard_edgelist_table_name = function(behavstr) {
   paste("lifeperiods", behavstr, "el", sep="_")
 }
 
+# calculates all the metrics I've listed for one network type for each ego in each time period
 gStats <- function(behavstr= "greetings",
-                   lifeperiods.df = lifeperiods, 
+                   lifeperiods.df = lifeperiods, # this is where it call the life periods table
                    behav.df =  NA,
                    directed = FALSE,
                    add_ego_edata    = FALSE) {
   # add new columns to the list of egos + periods to store graph statistics
   # for each kind of behavior.  this scheme depends on consistent naming of tables in the database
   # and the behavstr is in the name of the table, it's then used to create the graph statistic columns in the ego data frame
-  
-  
+
+
   # function to calculate all stats, and fill up the row
-  # implicit parameters: behav.df, 
+  # implicit parameters: behav.df,
   get_net_stats <- function(dfrow){
     ego = as.character(dfrow$ego)
     period = dfrow$period
@@ -169,76 +180,75 @@ gStats <- function(behavstr= "greetings",
     cat(".")
     # print(ego)
     # print(period)
-    
+
     # fill with zeros first
-    dfrow[statcolname(statnames(),behavstr)] <- 0 
+    dfrow[statcolname(statnames(),behavstr)] <- 0
     # get network for this behavior
     behav.net = one_graph(behav.df, ego, period, directedgraph = directed) # directed global
     # check that a network was made, e.g. ego actualy has obs for this period
     if( class(behav.net)=="network" && is.vertex(behav.net,ego)) {
-      for (s in statnames()){ 
+      for (s in statnames()){
         dfrow[statcolname(s,behavstr)] <- calc_net_stat(s, behav.net, ego, directed)
       }
     }
     return( data.frame(dfrow))
   }
-  
-  if (is.na(behav.df)) { 
+
+  if (is.na(behav.df)) {
     behav.df = standard_edgelist_table_name(behavstr)
-    # check that it exists in the database! 
+    # check that it exists in the database!
   }
-  
-  # remove all NAs from behavior dataframe to avoid crashes 
+
+  # remove all NAs from behavior dataframe to avoid crashes
   behav.df = behav.df[complete.cases(behav.df),]
-  
+
   # use plyr to run stats for each row
   stats.df = adply(lifeperiods.df,1,get_net_stats)
-  
+
   # add in egos data if asked for
   if ( add_ego_edata ) {
-    egos.df = egos 
+    egos.df = egos
     stats.df = merge(stats.df,egos.df,by="ego")
   }
-  
+
   return(stats.df)
-  
+
 }
 
-#######removed "liftlegboth", and ,"dyadicaggressions" 
-# when all are in the behavs:
-#directed=c("aggressions"=TRUE, "dyadicaggressions"=TRUE, "greetings"=FALSE,
-#"liftlegboth"=FALSE,"ll"=TRUE,"ais"=FALSE) 
 
+
+
+# combines all the network types of interest so that we can get all metrics for all network types per ego per period
 gStatsCombine <- function(periodstable = lifeperiods, behavs = c("ais","aggressions","ll")) {
-  
-  directed=c("ais"=FALSE, "aggressions"=TRUE, "ll"=TRUE) 
-  
+  # function pull in the lifeperiods table
+	#whether the network is directed of not
+  directed=c("ais"=FALSE, "aggressions"=TRUE, "ll"=TRUE)
+
   # build a list of all the stats data frames that will be merged later
   # note this is inefficient and doubles memory requirement, but only ~ 100,000 datapoints right now
   netstats = list()
-  
-  # select a type of period group to use 
+
+  # select a type of period group to use
   # periodstable = periodstable[periodstable$seq < 4, ]
-  
+
   for (b in behavs) {
     # to do: all for different lifeperiods table, currently uses the default
     netstats[[b]] = gStats(lifeperiods.df=periodstable, behavstr= b,   directed = directed[b], add_ego_edata = FALSE )
   }
-  
-  # currently, first 12 fields in stats df are not statistics fields, so don't merge them
 
+  # currently, first 12 fields in stats df are not statistics fields (other attributes), so don't merge them separately
   commonfields = names(netstats[[1]])[1:12]
   # start with first item in list of dfs of stats
   netstats.df = netstats[[1]]
-  # for remaining dfs in the list, merge in, one at a time 
+  # for remaining dfs in the list, merge in, one at a time
   # note the merge command takes just two dfs as a time
-  for ( i in 2:length(netstats)) { 
+  for ( i in 2:length(netstats)) {
     netstats.df = merge(netstats.df, netstats[[i]],  by=commonfields)
   }
-  
+
   # add other common data from egos table
-  egos.df = egos
+  egos.df = egos # calls in the egos table
   netstats.df = merge(netstats.df,egos.df,by="ego")
-  
+
   return( netstats.df)
 }
