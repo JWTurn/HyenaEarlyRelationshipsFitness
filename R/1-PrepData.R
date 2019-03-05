@@ -56,18 +56,22 @@ add_paste_id <- function(DT, xcol, ycol = 'period') {
 }
 add_paste_id(assolife, 'hyena')
 add_paste_id(affillife, 'll_solicitor')
+add_paste_id(aggrlife, 'aggressor')
 
 # Check output data
 check_dup <- function(DT) {
-	if (anyDuplicated(DT) != 0) stop('duplicated rows found in asso')
+	if (anyDuplicated(DT) != 0) stop('duplicated rows found in ', deparse(substitute(DT)))
 }
 check_na <- function(DT, col = 'idlife') {
-	if (DT[is.na(get(col)), .N] != 0) stop('NAs found in ', col)
+	if (DT[is.na(get(col)), .N] != 0) stop('NAs found in ', col, ' column of ', deparse(substitute(DT)))
 }
 
-check_dup(assolife); check_na(assolife)
-check_dup(affillife); check_na(affillife)
-check_dup(aggrlife); check_na(aggrlife)
+check_dup(assolife)
+check_na(assolife)
+check_dup(affillife)
+check_na(affillife)
+check_dup(aggrlife)
+check_na(aggrlife)
 
 # Output to derived-data
 saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
