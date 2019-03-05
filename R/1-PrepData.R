@@ -27,7 +27,7 @@ allstages <- merge(asso, life,
 assolife <- allstages[between(sessiondate, period_start, period_end)]
 
 # Generate ID-life stage
-assolife[, idlife := paste(hyena, period)]
+assolife[, idlife := paste(hyena, period, sep = '-')]
 
 ### Output ----
 # Drop excess columns
@@ -39,7 +39,7 @@ assolife[, (rmColsAsso) := NULL]
 
 
 # Check output data
-if(anyDuplicated(assolife) != 0) stop('duplicated rows found')
+if (anyDuplicated(assolife) != 0) stop('duplicated rows found')
 if (assolife[is.na(idlife), .N] != 0) stop('NAs found in id+life stage')
 
 
