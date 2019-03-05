@@ -48,10 +48,18 @@ affillife[, idlife := paste(ll_solicitor, period, sep = '-')]
 
 ### Output ----
 # Check output data
-if (anyDuplicated(assolife) != 0) stop('duplicated rows found in asso')
-if (assolife[is.na(idlife), .N] != 0) stop('NAs found in id+life stage')
-if (anyDuplicated(affillife) != 0) stop('duplicated rows found in affil')
-if (affillife[is.na(idlife), .N] != 0) stop('NAs found in id+life stage')
+check_dup <- function(DT) {
+	if (anyDuplicated(DT) != 0) stop('duplicated rows found in asso')
+}
+check_na <- function(DT, col = 'idlife') {
+	if (DT[is.na(get(col)), .N] != 0) stop('NAs found in ', col)
+}
+
+check_dup(assolife); check_na(assolife)
+check_dup(affillife); check_na(affillife)
+check_dup(aggrlife); check_na(aggrlife)
 
 # Output to derived-data
 saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
+saveRDS(affillife, 'data/derived-data/affiliation-lifestages.Rds')
+saveRDS(aggrlife, 'data/derived-data/aggression-lifestages.Rds')
