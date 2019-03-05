@@ -1,4 +1,6 @@
 ---
+title: 'hyena-spatsoc'
+author: 'Alec Robitaille'
 output: github_document
 ---
 
@@ -9,8 +11,39 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-# hyena-spatsoc
-Alec Robitaille
+## Project Structure
+```
+.
+├── data
+│   ├── derived-data
+│   │   └── mean-mets-association.Rds
+│   └── raw-data
+│       ├── data_affiliations.csv
+│       ├── data_aggressions.csv
+│       ├── data_associations.csv
+│       ├── data_egos.csv
+│       ├── egos.csv
+│       ├── lifeperiod.csv
+│       ├── lifeperiods_aggressions_el.csv
+│       ├── lifeperiods_ais_el.csv
+│       ├── lifeperiods_clanlists.csv
+│       ├── lifeperiods.csv
+│       ├── lifeperiods_ll_el.csv
+│       └── SNfitnessData_2019-03-04.csv
+├── lit
+│   ├── 1-s2.0-S0003347219300119-main.pdf
+│   └── BU-902-M.pdf
+├── R
+│   ├── 1-Hyena-Association.R
+│   ├── 2-Hyena-Affiliation.R
+│   ├── 3-Hyena-Aggression.R
+│   ├── egonet_rand.R
+│   └── final_models.R
+├── hyena-spatsoc.Rproj
+├── README.md
+└── README.Rmd
+
+```
 
 
 ## TODOs
