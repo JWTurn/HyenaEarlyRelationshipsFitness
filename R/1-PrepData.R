@@ -10,7 +10,7 @@ lapply(libs, require, character.only = TRUE)
 raw <- dir('data/raw-data', full.names = TRUE)
 
 # Life stages
-life <- fread(raw[grepl('lifeperiod.csv', raw)], drop = 'V1')
+life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
 
 # Network data
 asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
