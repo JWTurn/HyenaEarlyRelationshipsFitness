@@ -25,6 +25,9 @@ allstages <- merge(asso, life,
 # Compare sessiondate to period start+end
 assolife <- allstages[between(sessiondate, period_start, period_end)]
 
+# Generate ID-life stage
+assolife[, idlife := paste(hyena, period)]
+
 ### Output ----
 # Drop excess columns
 rmColsAsso <- c('period_start', 'period_end', 'mom_alive',
@@ -32,6 +35,12 @@ rmColsAsso <- c('period_start', 'period_end', 'mom_alive',
 								'mom_period_rank', 'clan_size', 'sessions_count',
 								'sessions_alone')
 assolife[, (rmColsAsso) := NULL]
+
+
+
+
+# Check output data
+
 
 # Output to derived-data
 saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
