@@ -12,7 +12,6 @@ raw <- dir('data/raw-data', full.names = TRUE)
 ## Life stages
 life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
 
-
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
 
@@ -21,17 +20,33 @@ asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
 aggr <- fread(raw[grepl('aggressions.csv', raw)], drop = 'V1')
 
+### Prep data ----
+asso[, sessiondate := as.IDate(sessiondate)]
+periods <- c('period_start', 'period_end')
+life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
+
 ### Join life stages ----
 ## Merge all lifestages in 'life' to association data --
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
-# Compare sessiondate to period start+end
 warning(asso[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 
-fsetdiff(asso, assolife[, .(session, sessiondate, hyena)])
+# Not egos
+allstages[!(hyena %in% life$ego), idlife := hyena]
 
-assolife <- allstages[is.na(period) | between(sessiondate, period_start, period_end)]
+# session matches a life period
+allstages[between(sessiondate, period_start, period_end),
+					idlife := paste(hyena, '-', period)]
+
+# where sessiondate doesn't match any period start/end
+# checking if the sessiondate doesn't match any periods
+allstages[, none := all(is.na(idlife)), .(sessiondate, hyena)]
+allstages[(none), idlife := hyena]
+
+assolife <- allstages[between(sessiondate, period_start, period_end), idlife := paste(hyena, '-', period)]
+
+fsetdiff(assolife[, .SD, .SDcols = colnames(asso)], asso)
 
 ## Merge all lifestages in 'life' to affiliation data --
 # TODO: do we want to merge the life stage of the solicitor or the receiver?
