@@ -15,6 +15,12 @@ life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
 
+
+######
+#TODO: which egos to filter out? (put it here)
+######
+
+
 ## Network data
 asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
