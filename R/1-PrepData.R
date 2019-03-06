@@ -44,18 +44,31 @@ allstages[between(sessiondate, period_start, period_end),
 allstages[, none := all(is.na(idlife)), .(sessiondate, hyena)]
 allstages[(none), idlife := hyena]
 
-assolife <- allstages[between(sessiondate, period_start, period_end), idlife := paste(hyena, '-', period)]
+assolife <- unique(allstages[!is.na(idlife), .(hyena, session, sessiondate, idlife)])
 
-fsetdiff(assolife[, .SD, .SDcols = colnames(asso)], asso)
+## Finding overlapping life periods:
+assolife[assolife[, .SD, .SDcols = colnames(asso)] %>% duplicated()]
+##
 
 ## Merge all lifestages in 'life' to affiliation data --
-# TODO: do we want to merge the life stage of the solicitor or the receiver?
-# not sure, the ego can be both the solicitor and the receiver which affects the in/out metrics.
-#If it's arbitrary, I would just do the solicitor,
-#but if it's a unique individual, then it should be the same in both columns, otherwise xxx-CD could interact with xxx, which would be itself
 allstages <- merge(affil, life,
 									 by.x = 'll_solicitor', by.y = 'ego',
-									 allow.cartesian = TRUE)
+									 all.x = TRUE, allow.cartesian = TRUE)
+# Not egos
+allstages[!(ll_solicitor %in% life$ego), idlife_solicitor := ll_solicitor]
+
+# session matches a life period
+allstages[between(sessiondate, period_start, period_end),
+					idlife_solicitor := paste(ll_solicitor, '-', period)]
+
+# where sessiondate doesn't match any period start/end
+# checking if the sessiondate doesn't match any periods
+allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, ll_solicitor)]
+allstages[(none), idlife_solicitor := ll_solicitor]
+
+affillife <- unique(allstages[!is.na(idlife_solicitor), .(ll_solicitor, session, sessiondate, idlife_solicitor)])
+
+
 
 # Compare sessiondate to period start+end
 warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
