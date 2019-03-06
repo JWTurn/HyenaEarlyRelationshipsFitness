@@ -31,9 +31,9 @@ asso[, sessiondate := as.IDate(sessiondate)]
 periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
-setnames(affil, 'll_reciever', 'll_receiver')
+setnames(affil, 'll_reciever', 'recip')
 
-### Join life stages to association data ----
+### Join association to life stages ----
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
@@ -53,23 +53,23 @@ allstages[(none), idlife := hyena]
 
 assolife <- unique(allstages[!is.na(idlife), .(hyena, session, sessiondate, idlife)])
 
-### Join life stages to affiliation data ----
+### Join affiliation to life stages ----
 warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 ## For solicitor --
 allstages <- merge(affil, life,
-									 by.x = 'll_solicitor', by.y = 'ego',
+									 by.x = 'aggressor', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
 # Not egos
-allstages[!(ll_solicitor %in% life$ego), idlife_solicitor := ll_solicitor]
+allstages[!(aggressor %in% life$ego), idlife_solicitor := aggressor]
 
 # session matches a life period
 allstages[between(sessiondate, period_start, period_end),
-					idlife_solicitor := paste0(ll_solicitor, '-', period)]
+					idlife_solicitor := paste0(aggressor, '-', period)]
 
 # where sessiondate doesn't match any period start/end
 # checking if the sessiondate doesn't match any periods
-allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, ll_solicitor)]
-allstages[(none), idlife_solicitor := ll_solicitor]
+allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, aggressor)]
+allstages[(none), idlife_solicitor := aggressor]
 
 affillife <- unique(allstages[!is.na(idlife_solicitor), .SD,
 															.SDcols = c(colnames(affil), 'idlife_solicitor')])
@@ -92,32 +92,47 @@ allstages[(none), idlife_receiver := ll_receiver]
 
 affillife <- unique(allstages[!is.na(idlife_receiver) & !is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_receiver', 'idlife_solicitor')])
 
-## Merge all lifestages in 'life' to aggression data --
-# TODO: do we want to merge the life stage of the aggressor or the recip?
+### Join aggression to life stages ----
+warning(aggr[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
+
+## For aggressor --
 allstages <- merge(aggr, life,
 									 by.x = 'aggressor', by.y = 'ego',
-									 allow.cartesian = TRUE)
+									 all.x = TRUE, allow.cartesian = TRUE)
+# Not egos
+allstages[!(aggressor %in% life$ego), idlife_aggressor := aggressor]
 
-# Compare sessiondate to period start+end
-warning(aggr[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
-aggrlife <- allstages[between(sessiondate, period_start, period_end)]
+# session matches a life period
+allstages[between(sessiondate, period_start, period_end),
+					idlife_aggressor := paste0(aggressor, '-', period)]
+
+# where sessiondate doesn't match any period start/end
+# checking if the sessiondate doesn't match any periods
+allstages[, none := all(is.na(idlife_aggressor)), .(sessiondate, aggressor)]
+allstages[(none), idlife_aggressor := aggressor]
+
+aggrlife <- unique(allstages[!is.na(idlife_aggressor), .SD,
+														 .SDcols = c(colnames(aggr), 'idlife_aggressor')])
+
+## For recip --
+allstages <- merge(aggrlife, life,
+									 by.x = 'recip', by.y = 'ego',
+									 all.x = TRUE, allow.cartesian = TRUE)
+# Not egos
+allstages[!(recip %in% life$ego), idlife_recip := recip]
+
+# session matches a life period
+allstages[between(sessiondate, period_start, period_end),
+					idlife_recip := paste0(recip, '-', period)]
+
+# where sessiondate doesn't match any period start/end
+# checking if the sessiondate doesn't match any periods
+allstages[, none := all(is.na(idlife_recip)), .(sessiondate, recip)]
+allstages[(none), idlife_recip := recip]
+
+aggrlife <- unique(allstages[!is.na(idlife_recip) & !is.na(idlife_aggressor), .SD, .SDcols = c(colnames(aggr), 'idlife_recip', 'idlife_aggressor')])
 
 ### Output ----
-# Check output data
-check_dup <- function(DT) {
-	if (anyDuplicated(DT) != 0) stop('duplicated rows found in ', deparse(substitute(DT)))
-}
-check_na <- function(DT, col = 'idlife') {
-	if (DT[is.na(get(col)), .N] != 0) stop('NAs found in ', col, ' column of ', deparse(substitute(DT)))
-}
-
-check_dup(assolife)
-check_na(assolife)
-check_dup(affillife)
-check_na(affillife)
-check_dup(aggrlife)
-check_na(aggrlife)
-
 # Output to derived-data
 saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
 saveRDS(affillife, 'data/derived-data/affiliation-lifestages.Rds')
@@ -128,4 +143,5 @@ saveRDS(aggrlife, 'data/derived-data/aggression-lifestages.Rds')
 ## Finding overlapping life periods:
 assolife[duplicated(assolife[, .SD, .SDcols = colnames(asso)])]
 affillife[duplicated(affillife[, .SD, .SDcols = colnames(affil)])]
+aggrlife[duplicated(aggrlife[, .SD, .SDcols = colnames(aggr)])]
 ##
