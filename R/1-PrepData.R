@@ -25,10 +25,13 @@ aggr <- fread(raw[grepl('aggressions.csv', raw)], drop = 'V1')
 ## Merge all lifestages in 'life' to association data --
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
-									 allow.cartesian = TRUE)
+									 all.x = TRUE, allow.cartesian = TRUE)
 # Compare sessiondate to period start+end
 warning(asso[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
-assolife <- allstages[between(sessiondate, period_start, period_end)]
+
+fsetdiff(asso, assolife[, .(session, sessiondate, hyena)])
+
+assolife <- allstages[is.na(period) | between(sessiondate, period_start, period_end)]
 
 ## Merge all lifestages in 'life' to affiliation data --
 # TODO: do we want to merge the life stage of the solicitor or the receiver?
