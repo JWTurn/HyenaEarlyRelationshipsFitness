@@ -31,6 +31,8 @@ asso[, sessiondate := as.IDate(sessiondate)]
 periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
+setnames(affil, 'll_reciever', 'll_receiver')
+
 ### Join life stages to association data ----
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
@@ -52,6 +54,7 @@ allstages[(none), idlife := hyena]
 assolife <- unique(allstages[!is.na(idlife), .(hyena, session, sessiondate, idlife)])
 
 ### Join life stages to affiliation data ----
+warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 ## For solicitor --
 allstages <- merge(affil, life,
 									 by.x = 'll_solicitor', by.y = 'ego',
@@ -68,10 +71,10 @@ allstages[between(sessiondate, period_start, period_end),
 allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, ll_solicitor)]
 allstages[(none), idlife_solicitor := ll_solicitor]
 
-affillife <- unique(allstages[!is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_solicitor')])
+affillife <- unique(allstages[!is.na(idlife_solicitor), .SD,
+															.SDcols = c(colnames(affil), 'idlife_solicitor')])
 
 ## For receiver --
-setnames(affillife, 'll_reciever', 'll_receiver')
 allstages <- merge(affillife, life,
 									 by.x = 'll_receiver', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
@@ -80,20 +83,14 @@ allstages[!(ll_receiver %in% life$ego), idlife_receiver := ll_receiver]
 
 # session matches a life period
 allstages[between(sessiondate, period_start, period_end),
-					idlife_receiver := paste00(ll_receiver, '-', period)]
+					idlife_receiver := paste0(ll_receiver, '-', period)]
 
 # where sessiondate doesn't match any period start/end
 # checking if the sessiondate doesn't match any periods
 allstages[, none := all(is.na(idlife_receiver)), .(sessiondate, ll_receiver)]
 allstages[(none), idlife_receiver := ll_receiver]
 
-affillife <- unique(allstages[!is.na(idlife_receiver), .SD, .SDcols = c(colnames(affil), 'idlife_receiver')])
-
-
-
-# Compare sessiondate to period start+end
-warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
-affillife <- allstages[between(sessiondate, period_start, period_end)]
+affillife <- unique(allstages[!is.na(idlife_receiver) & !is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_receiver', 'idlife_solicitor')])
 
 ## Merge all lifestages in 'life' to aggression data --
 # TODO: do we want to merge the life stage of the aggressor or the recip?
