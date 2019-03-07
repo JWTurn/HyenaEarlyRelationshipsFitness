@@ -154,7 +154,11 @@ allstages[, none := all(is.na(idlife_recip)),
 allstages[(none), idlife_recip := recip]
 
 # Drop duplicated rows from cartesian merge
-aggrlife <- unique(allstages[!is.na(idlife_recip) & !is.na(idlife_aggressor), .SD, .SDcols = c(colnames(aggr), 'idlife_recip', 'idlife_aggressor')])
+aggrlife <- unique(
+	allstages[!is.na(idlife_recip) & !is.na(idlife_aggressor),
+						.SD,
+						.SDcols = c(colnames(aggr), 'idlife_recip', 'idlife_aggressor')]
+)
 
 warning('difference of ', nrow(aggr) - nrow(aggrlife),
 				' rows between input aggression and after merge with lifestages')
