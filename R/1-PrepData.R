@@ -31,15 +31,19 @@ asso[, sessiondate := as.IDate(sessiondate)]
 periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
+#TODO: why?
 setnames(affil, 'll_reciever', 'recip')
 
+
+
 ### Join association to life stages ----
+# Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
 allstages <- merge(asso, life,
 									 by.x = 'hyena', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
 warning(asso[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 
-# Not egos
+# If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(hyena %in% life$ego), idlife := hyena]
 
 # session matches a life period
@@ -92,14 +96,18 @@ allstages[(none), idlife_receiver := recip]
 
 affillife <- unique(allstages[!is.na(idlife_receiver) & !is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_receiver', 'idlife_solicitor')])
 
+
+
 ### Join aggression to life stages ----
 warning(aggr[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 
 ## For aggressor --
+# Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
 allstages <- merge(aggr, life,
 									 by.x = 'aggressor', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
-# Not egos
+
+# If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(aggressor %in% life$ego), idlife_aggressor := aggressor]
 
 # session matches a life period
@@ -115,10 +123,12 @@ aggrlife <- unique(allstages[!is.na(idlife_aggressor), .SD,
 														 .SDcols = c(colnames(aggr), 'idlife_aggressor')])
 
 ## For recip --
+# Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
 allstages <- merge(aggrlife, life,
 									 by.x = 'recip', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
-# Not egos
+
+# If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(recip %in% life$ego), idlife_recip := recip]
 
 # session matches a life period
