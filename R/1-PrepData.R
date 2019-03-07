@@ -15,12 +15,6 @@ life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
 
-
-######
-#TODO: which egos to filter out? (put it here)
-######
-
-
 ## Network data
 asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
@@ -31,10 +25,14 @@ asso[, sessiondate := as.IDate(sessiondate)]
 periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
+# TODO: which egos to filter out?
+setkey(life, period_start, period_end)
+drop <- foverlaps(life, life)[ego == i.ego & period != i.period]$ego
+
+asso <- asso[!(hyena %in% drop)]
+
 #TODO: why?
 setnames(affil, 'll_reciever', 'recip')
-
-
 
 ### Join association to life stages ----
 # Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
