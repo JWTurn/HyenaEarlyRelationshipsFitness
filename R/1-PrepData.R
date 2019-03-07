@@ -46,12 +46,11 @@ warning(asso[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 # If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(hyena %in% life$ego), idlife := hyena]
 
-# session matches a life period
+# If the session time matches a period start-end, they are during that life stage
 allstages[between(sessiondate, period_start, period_end),
 					idlife := paste0(hyena, '-', period)]
 
-# where sessiondate doesn't match any period start/end
-# checking if the sessiondate doesn't match any periods
+# if ALL the rows that are leftover for an id/period date and time, then that individual must be outside of the range of their lifestages during that interaction. therefore idlife is just the ID
 allstages[, none := all(is.na(idlife)), .(sessiondate, hyena)]
 allstages[(none), idlife := hyena]
 
@@ -73,31 +72,35 @@ allstages <- merge(affil, life,
 # If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(ll_solicitor %in% life$ego), idlife_solicitor := ll_solicitor]
 
-# session matches a life period
+# If the session time matches a period start-end, they are during that life stage
 allstages[between(sessiondate, period_start, period_end),
 					idlife_solicitor := paste0(ll_solicitor, '-', period)]
 
-# where sessiondate doesn't match any period start/end
-# checking if the sessiondate doesn't match any periods
-allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, ll_solicitor)]
+# if ALL the rows that are leftover for an id/period date and time, then that individual must be outside of the range of their lifestages during that interaction. therefore idlife is just the ID
+allstages[, none := all(is.na(idlife_solicitor)),
+					.(sessiondate, grtTime, ll_solicitor)]
 allstages[(none), idlife_solicitor := ll_solicitor]
 
 affillife <- unique(allstages[!is.na(idlife_solicitor), .SD,
 															.SDcols = c(colnames(affil), 'idlife_solicitor')])
 
+warning('difference of ', nrow(affil) - nrow(affillife),
+				' rows between input association and after merge with lifestages')
+
 ## For receiver --
+# Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
 allstages <- merge(affillife, life,
 									 by.x = 'recip', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
-# Not egos
+
+# If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(recip %in% life$ego), idlife_receiver := recip]
 
-# session matches a life period
+# If the session time matches a period start-end, they are during that life stage
 allstages[between(sessiondate, period_start, period_end),
 					idlife_receiver := paste0(recip, '-', period)]
 
-# where sessiondate doesn't match any period start/end
-# checking if the sessiondate doesn't match any periods
+# if ALL the rows that are leftover for an id/period date and time, then that individual must be outside of the range of their lifestages during that interaction. therefore idlife is just the ID
 allstages[, none := all(is.na(idlife_receiver)), .(sessiondate, recip)]
 allstages[(none), idlife_receiver := recip]
 
@@ -117,12 +120,11 @@ allstages <- merge(aggr, life,
 # If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(aggressor %in% life$ego), idlife_aggressor := aggressor]
 
-# session matches a life period
+# If the session time matches a period start-end, they are during that life stage
 allstages[between(sessiondate, period_start, period_end),
 					idlife_aggressor := paste0(aggressor, '-', period)]
 
-# where sessiondate doesn't match any period start/end
-# checking if the sessiondate doesn't match any periods
+# if ALL the rows that are leftover for an id/period date and time, then that individual must be outside of the range of their lifestages during that interaction. therefore idlife is just the ID
 allstages[, none := all(is.na(idlife_aggressor)), .(sessiondate, aggressor)]
 allstages[(none), idlife_aggressor := aggressor]
 
@@ -138,12 +140,11 @@ allstages <- merge(aggrlife, life,
 # If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(recip %in% life$ego), idlife_recip := recip]
 
-# session matches a life period
+# If the session time matches a period start-end, they are during that life stage
 allstages[between(sessiondate, period_start, period_end),
 					idlife_recip := paste0(recip, '-', period)]
 
-# where sessiondate doesn't match any period start/end
-# checking if the sessiondate doesn't match any periods
+# if ALL the rows that are leftover for an id/period date and time, then that individual must be outside of the range of their lifestages during that interaction. therefore idlife is just the ID
 allstages[, none := all(is.na(idlife_recip)),
 					.(sessiondate, aggressiontime, recip)]
 allstages[(none), idlife_recip := recip]
