@@ -11,6 +11,8 @@ raw <- dir('data/raw-data', full.names = TRUE)
 
 ## Life stages
 life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
+egos <- fread(raw[grepl('egos_filtered.csv', raw)])
+
 
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
@@ -26,10 +28,11 @@ periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
 # TODO: which egos to filter out?
-setkey(life, period_start, period_end)
-drop <- foverlaps(life, life)[ego == i.ego & period != i.period]$ego
+life<-life[ego %chin% egos$ego] # these are just the
+#setkey(life, period_start, period_end)
+#drop <- foverlaps(life, life)[ego == i.ego & period != i.period]$ego
 
-asso <- asso[!(hyena %in% drop)]
+#asso <- asso[!(hyena %in% drop)]
 
 #TODO: why?
 setnames(affil, 'll_reciever', 'recip')
