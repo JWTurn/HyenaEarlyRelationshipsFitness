@@ -13,11 +13,11 @@ lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
+derived <- dir('data/derived-data', full.names = TRUE)
 asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 
-## Life stages
-life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
-
+# Life stages
+life <- readRDS(derived[grepl('ego', derived)])
 
 
 ### Prep ----
@@ -43,7 +43,7 @@ idCol <- 'hyena'
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[1:5]
+# life <- life[1:5]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
@@ -71,7 +71,8 @@ mets <- foreach(n = seq_along(netLs)) %dopar% {
 	cbind(data.table(
 		degree = degree(g),
 		strength = strength(g),
-		betweenness = betweenness(g, directed = FALSE, weights = (1/E(g)$weight)),
+		betweenness = betweenness(g, directed = FALSE,
+															weights = (1/E(g)$weight)),
 		ID = names(degree(g))
 	), life[n])
 }

@@ -13,10 +13,13 @@ lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
+derived <- dir('data/derived-data', full.names = TRUE)
+
+# Affiliation
 affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
 
-## Life stages
-life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
+# Life stages
+life <- readRDS(derived[grepl('ego', derived)])
 
 
 

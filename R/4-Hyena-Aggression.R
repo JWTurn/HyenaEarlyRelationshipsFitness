@@ -11,9 +11,14 @@ lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
+derived <- dir('data/derived-data', full.names = TRUE)
 
-aggr <- fread(raw[grepl('agg', raw)])
-egos <- fread(raw[grepl('egos', raw)])
+# Affiliation
+aggre <- fread(raw[grepl('aggr', raw)], drop = 'V1')
+
+# Life stages
+life <- readRDS(derived[grepl('ego', derived)])
+
 
 ### Prep ----
 aggr[, sessiondate := as.IDate(sessiondate)]
