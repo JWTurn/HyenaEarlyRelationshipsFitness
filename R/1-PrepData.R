@@ -81,11 +81,9 @@ allstages[, none := all(is.na(idlife_solicitor)),
 					.(sessiondate, grtTime, ll_solicitor)]
 allstages[(none), idlife_solicitor := ll_solicitor]
 
+# Drop duplicated rows from cartesian merge
 affillife <- unique(allstages[!is.na(idlife_solicitor), .SD,
 															.SDcols = c(colnames(affil), 'idlife_solicitor')])
-
-warning('difference of ', nrow(affil) - nrow(affillife),
-				' rows between input association and after merge with lifestages')
 
 ## For receiver --
 # Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
@@ -104,7 +102,12 @@ allstages[between(sessiondate, period_start, period_end),
 allstages[, none := all(is.na(idlife_receiver)), .(sessiondate, recip)]
 allstages[(none), idlife_receiver := recip]
 
+# Drop duplicated rows from cartesian merge
 affillife <- unique(allstages[!is.na(idlife_receiver) & !is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_receiver', 'idlife_solicitor')])
+
+warning('difference of ', nrow(affil) - nrow(affillife),
+				' rows between input affiliation and after merge with lifestages')
+# affil[, .N, by = .(sessiondate, grtTime, ll_solicitor, recip)][N > 1, .N]
 
 
 
@@ -128,6 +131,7 @@ allstages[between(sessiondate, period_start, period_end),
 allstages[, none := all(is.na(idlife_aggressor)), .(sessiondate, aggressor)]
 allstages[(none), idlife_aggressor := aggressor]
 
+# Drop duplicated rows from cartesian merge
 aggrlife <- unique(allstages[!is.na(idlife_aggressor), .SD,
 														 .SDcols = c(colnames(aggr), 'idlife_aggressor')])
 
@@ -149,8 +153,62 @@ allstages[, none := all(is.na(idlife_recip)),
 					.(sessiondate, aggressiontime, recip)]
 allstages[(none), idlife_recip := recip]
 
+# Drop duplicated rows from cartesian merge
 aggrlife <- unique(allstages[!is.na(idlife_recip) & !is.na(idlife_aggressor), .SD, .SDcols = c(colnames(aggr), 'idlife_recip', 'idlife_aggressor')])
 
+warning('difference of ', nrow(aggr) - nrow(aggrlife),
+				' rows between input aggression and after merge with lifestages')
+# affil[, .N, by = .(sessiondate, grtTime, ll_solicitor, recip)][N > 1, .N]
+
+
+
+### Add multiple interactions in <= 1 minute back ----
+## Affiliation
+# Count number of rows for each date*time*solicitor*recip
+affil[, nByMin := .N, .(sessiondate, grtTime, ll_solicitor, recip)]
+affillife[, nByMin := .N, .(sessiondate, grtTime, ll_solicitor, recip)]
+
+# Preserve colnames w/o nByMin
+cols <- colnames(affil)[grep('nBy', colnames(affil), invert = TRUE)]
+
+# Find the difference between input affil and merged affillife, where
+affildif <- fsetdiff(affil[nByMin > 1, .SD, .SDcols = cols],
+										 affillife[nByMin > 1, .SD, .SDcols = cols])
+
+# Merge the life stage back on
+mergedif <- merge(affildif, affillife, by = cols)
+
+# Add the rows to the (affillife) merged life stages from above
+affilout <- rbindlist(list(affillife, mergedif))
+
+warning('difference of ', nrow(affil) - nrow(affilout),
+				' rows between input association and after merge with lifestages')
+
+## Aggression
+# Count number of rows for each date*time*solicitor*recip
+aggr[, nByMin := .N, .(sessiondate, aggressiontime, aggressor, recip)]
+aggrlife[, nByMin := .N, .(sessiondate, aggressiontime, aggressor, recip)]
+
+# Preserve colnames w/o nByMin
+cols <- colnames(aggr)[grep('nBy', colnames(aggr), invert = TRUE)]
+
+# Find the difference between input aggr and merged aggrlife, where
+aggrdif <- fsetdiff(aggr[nByMin > 1, .SD, .SDcols = cols],
+										 aggrlife[nByMin > 1, .SD, .SDcols = cols])
+
+# Merge the life stage back on
+mergedif <- merge(aggrdif, aggrlife, by = cols)
+
+# Add the rows to the (aggrlife) merged life stages from above
+aggrout <- rbindlist(list(aggrlife, mergedif))
+
+warning('difference of ', nrow(aggr) - nrow(aggrout),
+				' rows between input association and after merge with lifestages')
+
+
+### Finding NAs ----
+aggr[, cbind(.SD, rowSums(is.na(.SD)))][V2 > 0]
+aggrout[, cbind(.SD, rowSums(is.na(.SD)))][V2 > 0]
 
 
 ### Finding duplicates ----
