@@ -57,38 +57,38 @@ assolife <- unique(allstages[!is.na(idlife), .(hyena, session, sessiondate, idli
 warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 ## For solicitor --
 allstages <- merge(affil, life,
-									 by.x = 'aggressor', by.y = 'ego',
+									 by.x = 'll_solicitor', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
 # Not egos
-allstages[!(aggressor %in% life$ego), idlife_solicitor := aggressor]
+allstages[!(ll_solicitor %in% life$ego), idlife_solicitor := ll_solicitor]
 
 # session matches a life period
 allstages[between(sessiondate, period_start, period_end),
-					idlife_solicitor := paste0(aggressor, '-', period)]
+					idlife_solicitor := paste0(ll_solicitor, '-', period)]
 
 # where sessiondate doesn't match any period start/end
 # checking if the sessiondate doesn't match any periods
-allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, aggressor)]
-allstages[(none), idlife_solicitor := aggressor]
+allstages[, none := all(is.na(idlife_solicitor)), .(sessiondate, ll_solicitor)]
+allstages[(none), idlife_solicitor := ll_solicitor]
 
 affillife <- unique(allstages[!is.na(idlife_solicitor), .SD,
 															.SDcols = c(colnames(affil), 'idlife_solicitor')])
 
 ## For receiver --
 allstages <- merge(affillife, life,
-									 by.x = 'll_receiver', by.y = 'ego',
+									 by.x = 'recip', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
 # Not egos
-allstages[!(ll_receiver %in% life$ego), idlife_receiver := ll_receiver]
+allstages[!(recip %in% life$ego), idlife_receiver := recip]
 
 # session matches a life period
 allstages[between(sessiondate, period_start, period_end),
-					idlife_receiver := paste0(ll_receiver, '-', period)]
+					idlife_receiver := paste0(recip, '-', period)]
 
 # where sessiondate doesn't match any period start/end
 # checking if the sessiondate doesn't match any periods
-allstages[, none := all(is.na(idlife_receiver)), .(sessiondate, ll_receiver)]
-allstages[(none), idlife_receiver := ll_receiver]
+allstages[, none := all(is.na(idlife_receiver)), .(sessiondate, recip)]
+allstages[(none), idlife_receiver := recip]
 
 affillife <- unique(allstages[!is.na(idlife_receiver) & !is.na(idlife_solicitor), .SD, .SDcols = c(colnames(affil), 'idlife_receiver', 'idlife_solicitor')])
 
