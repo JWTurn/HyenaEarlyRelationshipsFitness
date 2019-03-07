@@ -137,10 +137,23 @@ allstages[between(sessiondate, period_start, period_end),
 
 # where sessiondate doesn't match any period start/end
 # checking if the sessiondate doesn't match any periods
-allstages[, none := all(is.na(idlife_recip)), .(sessiondate, recip)]
+allstages[, none := all(is.na(idlife_recip)),
+					.(sessiondate, aggressiontime, recip)]
 allstages[(none), idlife_recip := recip]
 
 aggrlife <- unique(allstages[!is.na(idlife_recip) & !is.na(idlife_aggressor), .SD, .SDcols = c(colnames(aggr), 'idlife_recip', 'idlife_aggressor')])
+
+
+
+### Finding duplicates ----
+dup <- assolife[duplicated(assolife[, .SD, .SDcols = colnames(asso)])]
+assodup <- assolife[dup[, .SD, .SDcols = colnames(asso)], on = colnames(asso)]
+
+dup <- affillife[duplicated(affillife[, .SD, .SDcols = colnames(affil)])]
+affildup <- affillife[dup[, .SD, .SDcols = colnames(affil)], on = colnames(affil)]
+
+dup <- aggrlife[duplicated(aggrlife[, .SD, .SDcols = colnames(aggr)])]
+aggrdup <- aggrlife[dup[, .SD, .SDcols = colnames(aggr)], on = colnames(aggr)]
 
 ### Output ----
 # Output to derived-data
@@ -149,9 +162,3 @@ saveRDS(affillife, 'data/derived-data/affiliation-lifestages.Rds')
 saveRDS(aggrlife, 'data/derived-data/aggression-lifestages.Rds')
 
 
-### Extra ----
-## Finding overlapping life periods:
-assolife[duplicated(assolife[, .SD, .SDcols = colnames(asso)])]
-affillife[duplicated(affillife[, .SD, .SDcols = colnames(affil)])]
-aggrlife[duplicated(aggrlife[, .SD, .SDcols = colnames(aggr)])]
-##
