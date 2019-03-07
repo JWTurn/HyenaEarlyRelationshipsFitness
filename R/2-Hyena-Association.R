@@ -54,7 +54,7 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
 
-	get_gbi(sub['hyena' %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+	get_gbi(sub[hyena %chin% sub[, .N, idCol][N > 10, get(idCol)]],
 					groupCol, idCol)
 }
 
@@ -83,4 +83,4 @@ setnames(out, 'ID', idCol)
 out <- out[hyena == ego]
 
 ### Output ----
-out
+out %>% knitr::kable()
