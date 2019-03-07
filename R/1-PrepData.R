@@ -57,13 +57,20 @@ allstages[(none), idlife := hyena]
 
 assolife <- unique(allstages[!is.na(idlife), .(hyena, session, sessiondate, idlife)])
 
+warning('difference of ', nrow(asso) - nrow(assolife),
+				' rows between input association and after merge with lifestages')
+
+
+
 ### Join affiliation to life stages ----
 warning(affil[is.na(sessiondate), .N], ' NAs in sessiondate dropped')
 ## For solicitor --
+# Merge all possible life stages to all egos (allow.cartesian), and retain all non-ego individuals (all.x)
 allstages <- merge(affil, life,
 									 by.x = 'll_solicitor', by.y = 'ego',
 									 all.x = TRUE, allow.cartesian = TRUE)
-# Not egos
+
+# If not an ego, the 'idlife' column is just the name of the individual
 allstages[!(ll_solicitor %in% life$ego), idlife_solicitor := ll_solicitor]
 
 # session matches a life period
