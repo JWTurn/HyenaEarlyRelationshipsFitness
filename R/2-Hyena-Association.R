@@ -71,7 +71,7 @@ mets <- foreach(n = seq_along(netLs)) %dopar% {
 	cbind(data.table(
 		degree = degree(g),
 		strength = strength(g),
-		betweenness = betweenness(g, directed = FALSE),
+		betweenness = betweenness(g, directed = FALSE, weights = (1/E(g)$weight)),
 		ID = names(degree(g))
 	), life[n])
 }
