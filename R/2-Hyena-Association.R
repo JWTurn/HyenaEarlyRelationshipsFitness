@@ -12,10 +12,9 @@ lapply(libs, require, character.only = TRUE)
 
 
 ### Import data ----
-derived <- dir('data/derived-data', full.names = TRUE)
 raw <- dir('data/raw-data', full.names = TRUE)
 
-asso <- readRDS(derived[grepl('association-life', derived)])
+asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 
 ## Life stages
 life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
@@ -52,11 +51,10 @@ asso[, idate := sessiondate]
 
 # Generate a GBI for each ego's life stage
 gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	sub <- asso[life[i],
-							on = .(sessiondate >= period_start,
-										 sessiondate < period_end)]
-	sub[, id := ifelse(hyena == life[i]$ego, idlife, hyena)]
-	get_gbi(sub, 'group', 'id')
+	get_gbi(asso[life[i],
+							 on = .(sessiondate >= period_start,
+							 			 sessiondate < period_end)],
+					'group', 'hyena')
 }
 
 # Generate list of networks
@@ -80,6 +78,8 @@ mets <- foreach(n = seq_along(netLs)) %dopar% {
 out <- rbindlist(mets)
 setnames(out, 'ID', idCol)
 
+
+out <- out[hyena == ego]
 
 ### Output ----
 out
