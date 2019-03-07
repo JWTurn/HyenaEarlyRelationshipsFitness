@@ -13,7 +13,6 @@ lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
-
 asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 
 ## Life stages
@@ -51,10 +50,12 @@ asso[, idate := sessiondate]
 
 # Generate a GBI for each ego's life stage
 gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	get_gbi(asso[life[i],
-							 on = .(sessiondate >= period_start,
-							 			 sessiondate < period_end)],
-					'group', 'hyena')
+	sub <- asso[life[i],
+							on = .(sessiondate >= period_start,
+										 sessiondate < period_end)]
+
+	get_gbi(sub['hyena' %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+					groupCol, idCol)
 }
 
 # Generate list of networks
