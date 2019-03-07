@@ -215,16 +215,16 @@ aggrout[, cbind(.SD, rowSums(is.na(.SD)))][V2 > 0]
 dup <- assolife[duplicated(assolife[, .SD, .SDcols = colnames(asso)])]
 assodup <- assolife[dup[, .SD, .SDcols = colnames(asso)], on = colnames(asso)]
 
-dup <- affillife[duplicated(affillife[, .SD, .SDcols = colnames(affil)])]
-affildup <- affillife[dup[, .SD, .SDcols = colnames(affil)], on = colnames(affil)]
+dup <- affilout[duplicated(affilout[, .SD, .SDcols = colnames(affil)])]
+affildup <- affilout[dup[, .SD, .SDcols = colnames(affil)], on = colnames(affil)]
 
-dup <- aggrlife[duplicated(aggrlife[, .SD, .SDcols = colnames(aggr)])]
-aggrdup <- aggrlife[dup[, .SD, .SDcols = colnames(aggr)], on = colnames(aggr)]
+dup <- aggrout[duplicated(aggrout[, .SD, .SDcols = colnames(aggr)])]
+aggrdup <- aggrout[dup[, .SD, .SDcols = colnames(aggr)], on = colnames(aggr)]
 
 ### Output ----
 # Output to derived-data
 saveRDS(assolife, 'data/derived-data/association-lifestages.Rds')
-saveRDS(affillife, 'data/derived-data/affiliation-lifestages.Rds')
-saveRDS(aggrlife, 'data/derived-data/aggression-lifestages.Rds')
+saveRDS(affilout, 'data/derived-data/affiliation-lifestages.Rds')
+saveRDS(aggrout, 'data/derived-data/aggression-lifestages.Rds')
 
 
