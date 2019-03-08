@@ -52,6 +52,7 @@ life <- life[1:5]
 affil[, idate := sessiondate]
 
 # Generate a GBI for each ego's life stage
+graph_from_data_frame(one[, .(ll_solicitor, ll_reciever)], directed = TRUE)
 gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	get_gbi(affil[life[i],
 								on = .(sessiondate >= period_start,

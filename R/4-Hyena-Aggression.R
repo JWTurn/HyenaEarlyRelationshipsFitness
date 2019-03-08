@@ -14,7 +14,7 @@ raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
 # Affiliation
-aggre <- fread(raw[grepl('aggr', raw)], drop = 'V1')
+aggre <- fread(raw[grepl('data_aggr', raw)], drop = 'V1')
 
 # Life stages
 life <- readRDS(derived[grepl('ego', derived)])
