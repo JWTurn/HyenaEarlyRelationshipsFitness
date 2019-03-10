@@ -1,12 +1,36 @@
+# X: number of times a and b were observed together
+# Ya: number of times individual a was observed and individual b was not observed
+# Yb: swap a for b above
+# Yab: number of times both individuals were observed but in different groups
+
+
+
+library(hwig)
+library(spatsoc)
+library(data.table)
+data(DT)
 gbi <- get_gbi(DT[id <= 5], 'group', 'id')
 
+do.call(rbind,
 lapply(seq_len(ncol(gbi)), function(i) {
 	m <- matrix(rep(gbi[, i], ncol(gbi)), ncol = ncol(gbi))
 	x <- apply(m + gbi, 2, function(x) sum(x == 2))
-	yb <- apply(m - gbi, 2, function(x) sum(x == -1))
 	ya <- apply(m - gbi, 2, function(x) sum(x == 1))
+	yb <- apply(m - gbi, 2, function(x) sum(x == -1))
 	yab <- ya + yb
 
 	# x/(x + 0.5 * yab)
 	x/((0.5*(ya+yb)) + yab + x)
 })
+)
+
+
+
+##
+
+asso[, t := .GRP, .(sessiondate, session)]
+asso[, group := .GRP, session]
+DT <- asso[year(sessiondate) == 1988][hyena %chin% DT[, unique(hyena)[1:5]]]
+DT
+gbi <- get_gbi(DT, 'group', 'hyena')
+asnipe::get_network(gbi, 'GBI', 'HWI', times = seq(1:69))
