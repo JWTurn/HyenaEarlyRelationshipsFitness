@@ -81,8 +81,9 @@ mets <- foreach(n = seq_along(netLs)) %dopar% {
 out <- rbindlist(mets)
 setnames(out, 'ID', idCol)
 
-
 out <- out[hyena == ego]
 
 ### Output ----
 out %>% knitr::kable()
+
+saveRDS(out, 'data/derived-data/association-twi.Rds')
