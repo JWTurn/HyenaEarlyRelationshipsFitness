@@ -5,6 +5,7 @@ twi <- function(gbi, times) {
 	#   yb is all times where b is observed and not a
 	#   x is all times where a and b are observed associating
 	if (missing(times)) {
+		yab <- 0
 		do.call(rbind,
 						lapply(seq_len(ncol(gbi)), function(i) {
 							m <- matrix(rep(gbi[, i], ncol(gbi)), ncol = ncol(gbi))
@@ -14,8 +15,6 @@ twi <- function(gbi, times) {
 								sum(x == 1))
 							yb <- apply(m - gbi, 2, function(x)
 								sum(x == -1))
-							yab <- 0
-
 							x / (x + (2 * yab) + ya + yb)
 						}))
 	}
