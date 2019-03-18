@@ -24,8 +24,11 @@ life <- readRDS(derived[grepl('ego', derived)])
 asso[, sessiondate := as.IDate(sessiondate)]
 asso[, yr := year(sessiondate)]
 
-sessionrange <- c('start', 'end')
-life[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
+sessionrange <- c('start', 'stop')
+asso[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
+
+period <- c('period_start', 'period_end')
+life[, (period) := lapply(.SD, as.ITime), .SDcols = (period)]
 
 # Cast session to an integer group column
 asso[, group := .GRP, session]
@@ -47,10 +50,10 @@ setkey(asso, sessiondate, start, stop)
 # Find all overlapping sessions
 ovr <- foverlaps(asso, asso, type = 'within')
 
-# Drop where
-ovr[session != i.session &
-
-
+# Drop where left and right group are the same
+uovr <- unique(ovr[group != i.group, .(group, i.group)])
+g <- graph_from_edgelist(as.matrix(uovr), directed = FALSE)
+id <- get.edges(g, E(g))
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
