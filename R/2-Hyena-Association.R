@@ -54,13 +54,14 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
 
+	# Filter out < 10
 	get_gbi(sub[hyena %chin% sub[, .N, idCol][N > 10, get(idCol)]],
 					groupCol, idCol)
 }
 
 # Calculate TWI
 source('R/twi.R')
-netLs <- foreach(g = gbiLs) %dopar% {
+twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
 
