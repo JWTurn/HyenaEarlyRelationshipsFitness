@@ -5,11 +5,10 @@
 ### Notes ----
 # directed, count of affiliations during period/AI during period
 
+
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
-
-
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
@@ -20,7 +19,6 @@ affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
 
 # Life stages
 life <- readRDS(derived[grepl('ego', derived)])
-
 
 
 ### Prep ----
@@ -41,7 +39,6 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 
-
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
@@ -51,13 +48,32 @@ life <- life[1:5]
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 affil[, idate := sessiondate]
 
-# Generate a GBI for each ego's life stage
-graph_from_data_frame(one[, .(ll_solicitor, ll_reciever)], directed = TRUE)
-gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	get_gbi(affil[life[i],
-								on = .(sessiondate >= period_start,
-											 sessiondate < period_end)], 'group', 'hyena')
+
+# 1 = DT 154 edges
+
+# Count number of (directed) affiliations between individuals
+countAffil <- foreach(i = seq(1, nrow(life))) %dopar% {
+	affil[life[i],
+				on = .(sessiondate >= period_start,
+							 sessiondate < period_end)][, .N, .(ll_solicitor, ll_reciever)]
 }
+
+# Generate a GBI for each ego's life stage
+gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	sub <- asso[life[i],
+							on = .(sessiondate >= period_start,
+										 sessiondate < period_end)]
+
+	get_gbi(sub[hyena %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+					groupCol, idCol)
+}
+
+# Calculate TWI
+source('R/twi.R')
+netLs <- foreach(g = gbiLs) %dopar% {
+	twi(g)
+}
+
 
 # Generate list of networks
 netLs <- foreach(g = gbiLs) %dopar% {

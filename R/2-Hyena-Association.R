@@ -58,7 +58,7 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 					groupCol, idCol)
 }
 
-# Generate list of networks
+# Calculate TWI
 source('R/twi.R')
 netLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
