@@ -21,8 +21,17 @@ life <- readRDS(derived[grepl('ego', derived)])
 
 
 ### Prep ----
+asso <- asso[start <= stop]
+setcolorder(asso, c('hyena', 'session', 'sessiondate', 'start', 'stop'))
+asso[, start := as.ITime(start)]
+asso[, stop := as.ITime(stop)]
+setkey(asso, sessiondate, start, stop)
+ovr <- foverlaps(asso, asso, type = 'within')
+ovr[session != i.session]
+
 # Date columns
 asso[, sessiondate := as.IDate(sessiondate)]
+asso[, ]
 asso[, yr := year(sessiondate)]
 
 periods <- c('period_start', 'period_end')
@@ -43,7 +52,7 @@ idCol <- 'hyena'
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-# life <- life[1:5]
+life <- life[1:5]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
