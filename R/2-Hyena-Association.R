@@ -24,11 +24,11 @@ life <- readRDS(derived[grepl('ego', derived)])
 asso[, sessiondate := as.IDate(sessiondate)]
 asso[, yr := year(sessiondate)]
 
-sessionrange <- c('start', 'stop')
-asso[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
+# sessionrange <- c('start', 'stop')
+# asso[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
 
 period <- c('period_start', 'period_end')
-life[, (period) := lapply(.SD, as.ITime), .SDcols = (period)]
+life[, (period) := lapply(.SD, as.IDate), .SDcols = (period)]
 
 # Cast session to an integer group column
 asso[, group := .GRP, session]
@@ -38,22 +38,6 @@ life <- life[, .(ego, period, period_start, period_end)]
 
 groupCol <- 'group'
 idCol <- 'hyena'
-
-### Find concurrent sessions ----
-# Drop rows where start is greater than stop
-asso <- asso[start <= stop]
-setcolorder(asso, c('hyena', 'group', 'sessiondate', 'start', 'stop'))
-
-# Set keys
-setkey(asso, sessiondate, start, stop)
-
-# Find all overlapping sessions
-ovr <- foverlaps(asso, asso, type = 'within')
-
-# Drop where left and right group are the same
-uovr <- unique(ovr[group != i.group, .(group, i.group)])
-g <- graph_from_edgelist(as.matrix(uovr), directed = FALSE)
-id <- get.edges(g, E(g))
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
@@ -75,8 +59,9 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 }
 
 # Generate list of networks
+source('R/twi.R')
 netLs <- foreach(g = gbiLs) %dopar% {
-	get_network(g, data_format = "GBI", association_index = "HWI")
+	twi(g)
 }
 
 # Generate graph and calculate network metrics
