@@ -20,6 +20,8 @@ affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
 # Life stages
 life <- readRDS(derived[grepl('ego', derived)])
 
+# Association
+asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
 
 ### Prep ----
 # Date columns
@@ -31,6 +33,12 @@ life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
 # Cast session to an integer group column
 # affil[, group := .GRP, session]
+
+asso[, sessiondate := as.IDate(sessiondate)]
+asso[, yr := year(sessiondate)]
+
+asso[, group := .GRP, session]
+
 
 # Keep only relevant columns
 life <- life[, .(ego, period, period_start, period_end)]
