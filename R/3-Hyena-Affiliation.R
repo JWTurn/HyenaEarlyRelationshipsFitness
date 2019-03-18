@@ -46,6 +46,7 @@ life <- life[, .(ego, period, period_start, period_end)]
 groupCol <- 'group'
 idCol <- 'hyena'
 
+setnames(affil, 'll_reciever', 'll_receiver')
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
@@ -59,11 +60,13 @@ affil[, idate := sessiondate]
 
 # Count number of (directed) affiliations between individuals
 countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	as.matrix(
-		dcast(affil[life[i],
-								on = .(sessiondate >= period_start,
-											 sessiondate < period_end)],
-					ll_reciever~ll_solicitor)[-1])
+	focal <- affil[life[i],
+								 on = .(sessiondate >= period_start,
+								 			 sessiondate < period_end)]
+
+	cast <- dcast(focal, ll_receiver ~ ll_solicitor)
+	as.matrix(cast[, .SD, .SDcols = colnames(cast)[-1]],
+						rownames.value = cast$ll_receiver)
 }
 
 # Generate a GBI for each ego's life stage
@@ -83,9 +86,11 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
 
-# Generate list of networks
-unique(focalPeriod[[1]][, .(ll_solicitor, ll_reciver)])
+edgeDF <- foreach(i = seq(1, nrow(life))) %dopar% {
+	melt(countLs[[i]])
+}
 
+# Generate list of networks
 netLs <- foreach(i = seq_along(twiLs)) %dopar% {
 	countLs[[i]] - twiLs[[i]]
 }
