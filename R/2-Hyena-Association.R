@@ -10,7 +10,6 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 
-
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
@@ -21,21 +20,12 @@ life <- readRDS(derived[grepl('ego', derived)])
 
 
 ### Prep ----
-asso <- asso[start <= stop]
-setcolorder(asso, c('hyena', 'session', 'sessiondate', 'start', 'stop'))
-asso[, start := as.ITime(start)]
-asso[, stop := as.ITime(stop)]
-setkey(asso, sessiondate, start, stop)
-ovr <- foverlaps(asso, asso, type = 'within')
-ovr[session != i.session]
-
 # Date columns
 asso[, sessiondate := as.IDate(sessiondate)]
-asso[, ]
 asso[, yr := year(sessiondate)]
 
-periods <- c('period_start', 'period_end')
-life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
+sessionrange <- c('start', 'end')
+life[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
 
 # Cast session to an integer group column
 asso[, group := .GRP, session]
@@ -45,6 +35,20 @@ life <- life[, .(ego, period, period_start, period_end)]
 
 groupCol <- 'group'
 idCol <- 'hyena'
+
+### Find concurrent sessions ----
+# Drop rows where start is greater than stop
+asso <- asso[start <= stop]
+setcolorder(asso, c('hyena', 'group', 'sessiondate', 'start', 'stop'))
+
+# Set keys
+setkey(asso, sessiondate, start, stop)
+
+# Find all overlapping sessions
+ovr <- foverlaps(asso, asso, type = 'within')
+
+# Drop where
+ovr[session != i.session &
 
 
 
