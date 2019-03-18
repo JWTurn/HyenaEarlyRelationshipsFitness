@@ -37,8 +37,6 @@ gbi <- gbi[1:5,]
 # spread a 1 in a timegroup, to all rows of that timegroup
 
 hwi <- function(gbi, times) {
-	## If we assume that all groups are temporally distinct
-	# 	then yab is 0
 	if (missing(times)) {
 		do.call(rbind,
 						lapply(seq_len(ncol(gbi)), function(i) {

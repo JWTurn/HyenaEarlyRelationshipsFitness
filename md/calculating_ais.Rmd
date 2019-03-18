@@ -9,22 +9,22 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Formulas
 
-$$ HWI = \frac{x}{x + Y_{ab} + \frac{1}{2}(Y_{a} * Y_{b})} $$
+$$ HWI = \frac{x}{x + Y_{ab} + \frac{1}{2}(Y_{a} + Y_{b})} $$
 
-$$ TWI = \frac{x}{x + 2Y_{ab} +Y_{a} * Y_{b}}$$
+$$ TWI = \frac{x}{x + 2Y_{ab} +Y_{a} + Y_{b}}$$
 
 ## Variables
 
 $x$ = number of instances where individuals a and b were observed, associating
 
-$Yab$ = number of instances where individuals a and b were observed, not associating
+$Y_{ab}$ = number of instances where individuals a and b were observed, not associating
 
-$Ya$ = number of instances where individual a was observed, and individual b was not observed
+$Y_{a}$ = number of instances where individual a was observed, and individual b was not observed
 
-$Yb$ = number of instances where individual b was observed, and individual a was not observed
+$Y_{b}$ = number of instances where individual b was observed, and individual a was not observed
 
 ## Assumptions
 
-In the case of GPS data with regular fix rates, all individuals are (usually) located at each "observation" and therefore, $Ya$ and $Yb$ are 0 or nearly 0. 
+In the case of GPS data with regular fix rates, all individuals are (usually) located at each "observation" and therefore, $Y_{a}$ and $Y_{b}$ are 0 or nearly 0. 
 
-In the case of focal observations, if we assume a single observer can only observe one group at a time, and all groups are temporally distinct, then $Yab$ is 0. If groups are not temporally distinct (e.g.: more than one observer observing different groups at the same time), then the temporal component must provided to calculate $Ya$, $Yb$ and $Yab$. 
+In the case of focal observations, if we assume a single observer can only observe one group at a time, and all groups are temporally distinct, then $Y_{ab}$ is 0. If groups are not temporally distinct (e.g.: more than one observer observing different groups at the same time), then the temporal component must be provided to calculate $Y_{a}$, $Y_{b}$ and $Y_{ab}$. 
