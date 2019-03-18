@@ -59,10 +59,11 @@ affil[, idate := sessiondate]
 
 # Count number of (directed) affiliations between individuals
 countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	dcast(affil[life[i],
-							on = .(sessiondate >= period_start,
-										 sessiondate < period_end)],
-				ll_reciever~ll_solicitor)
+	as.matrix(
+		dcast(affil[life[i],
+								on = .(sessiondate >= period_start,
+											 sessiondate < period_end)],
+					ll_reciever~ll_solicitor)[-1])
 }
 
 # Generate a GBI for each ego's life stage
@@ -72,7 +73,7 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 										 sessiondate < period_end)]
 
 	# Filter out < 10
-	get_gbi(sub[hyena %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+	get_gbi(sub[get(idCol) %chin% sub[, .N, idCol][N > 10, get(idCol)]],
 					groupCol, idCol)
 }
 
@@ -82,10 +83,11 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
 
-
 # Generate list of networks
-netLs <- foreach(i = seq.len(twiLs)) %dopar% {
+unique(focalPeriod[[1]][, .(ll_solicitor, ll_reciver)])
 
+netLs <- foreach(i = seq_along(twiLs)) %dopar% {
+	countLs[[i]] - twiLs[[i]]
 }
 
 # Generate graph and calculate network metrics
