@@ -95,13 +95,13 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	return(
 		cbind(
 		data.table(
-			degree = degree(g, mode = 'total'),
-			outdegree = degree(g, mode = 'out'),
-			indegree = degree(g, mode = 'in'),
-			strength = strength(g, mode = 'total'),
-			outstrength = strength(g, mode = 'out'),
-			instrength = strength(g, mode = 'in'),
-			betweenness = betweenness(g, directed = TRUE),
+			aggr_degree = degree(g, mode = 'total'),
+			aggr_outdegree = degree(g, mode = 'out'),
+			aggr_indegree = degree(g, mode = 'in'),
+			aggr_strength = strength(g, mode = 'total'),
+			aggr_outstrength = strength(g, mode = 'out'),
+			aggr_instrength = strength(g, mode = 'in'),
+			aggr_betweenness = betweenness(g, directed = TRUE),
 																weights = (1/w),
 			ID = names(degree(g))
 		),

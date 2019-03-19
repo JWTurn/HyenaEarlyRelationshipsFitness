@@ -71,9 +71,9 @@ mets <- foreach(n = seq_along(twiLs)) %dopar% {
 											 diag = FALSE, weighted = TRUE)
 
 	cbind(data.table(
-		degree = degree(g),
-		strength = strength(g),
-		betweenness = betweenness(g, directed = FALSE,
+		twi_degree = degree(g),
+		twi_strength = strength(g),
+		twi_betweenness = betweenness(g, directed = FALSE,
 															weights = (1/E(g)$weight)),
 		ID = names(degree(g))
 	), life[n])
