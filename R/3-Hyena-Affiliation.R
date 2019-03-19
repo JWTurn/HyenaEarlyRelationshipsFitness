@@ -11,6 +11,8 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
+options(stringsAsFactors = FALSE)
+
 raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
@@ -63,10 +65,7 @@ countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- affil[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-
-	cast <- dcast(focal, ll_receiver ~ ll_solicitor)
-	as.matrix(cast[, .SD, .SDcols = colnames(cast)[-1]],
-						rownames.value = cast$ll_receiver)
+	focal[, .N, .(ll_receiver, ll_solicitor)]
 }
 
 # Generate a GBI for each ego's life stage
@@ -86,26 +85,33 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
 
-edgeDF <- foreach(i = seq(1, nrow(life))) %dopar% {
-	melt(countLs[[i]])
-}
-
-# Generate list of networks
-netLs <- foreach(i = seq_along(twiLs)) %dopar% {
-	countLs[[i]] - twiLs[[i]]
+# Create edge list
+edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+	by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
 # Generate graph and calculate network metrics
-mets <- foreach(n = seq_along(netLs)) %dopar% {
-	g <- graph.adjacency(netLs[[n]], 'undirected',
-											 diag = FALSE, weighted = TRUE)
+mets <- foreach(i = seq_along(edgeLs)) %dopar% {
+	# x <- na.omit(edgeLs[[i]])[!(count == 0 & value == 0), w := count / value]
+	g <- graph_from_data_frame(
+		edgeLs[[i]][, .(ll_solicitor, ll_receiver)], directed = TRUE
+	)
+	# E()
+	# df <- data.frame(from=c("a", "b", "a"), to=c("b", "a", "b"))
+	# > g <- graph.data.frame(df)
+	# > E(g)$weight <- 1
+	# > g <- simplify(g, edge.attr.comb="sum")
 
-	cbind(data.table(
-		degree = degree(g),
-		strength = strength(g),
-		betweenness = betweenness(g, directed = FALSE),
-		ID = names(degree(g))
-	), life[n])
+
+	# cbind(data.table(
+	# 	degree = degree(g),
+	# 	strength = strength(g),
+	# 	betweenness = betweenness(g, directed = FALSE),
+	# 	ID = names(degree(g))
+	# ), life[n])
 }
 
 out <- rbindlist(mets)
