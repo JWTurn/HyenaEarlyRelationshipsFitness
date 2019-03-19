@@ -53,7 +53,7 @@ avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- aggr[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-	focal[, .(avgB1 = mean(behavior1)), by = aggressor]
+	focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
 }
 
 # Generate a GBI for each ego's life stage
@@ -77,17 +77,18 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	merge(avgLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+	merge(avgLs[[i]], twi,
+				by.x = c('aggressor', 'recip'),
 				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
+	g <- graph_from_data_frame(edgeLs[[i]][, .(aggressor, recip)],
 														 directed = TRUE)
 
 	# average of behavior1 during period/AI during period
-	E(g)$weight <- edgeLs[[i]][, .(w  = N / value)]
+	E(g)$weight <- edgeLs[[i]][, .(w  = avgB1 / value)]
 
 	return(cbind(
 		data.table(
@@ -104,6 +105,8 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 }
 
 out <- rbindlist(mets)
+setnames(out, 'ID', idCol)
+
 
 ### Output ----
-saveRDS(out, 'data/derived-data/aggriation-metrics.Rds')
+saveRDS(out, 'data/derived-data/aggression-metrics.Rds')
