@@ -11,8 +11,6 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-options(stringsAsFactors = FALSE)
-
 raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 

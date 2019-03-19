@@ -1,4 +1,4 @@
-### Hyena/Spatsoc - Association ====
+### Hyena/Spatsoc - Aggression ====
 # Alec Robitaille
 # March 01 2019
 
@@ -6,24 +6,86 @@
 # directed, average of behavior1 during period/AI during period
 
 ### Packages ----
-libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph')
+libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
 raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
-# Affiliation
-aggre <- fread(raw[grepl('data_aggr', raw)], drop = 'V1')
+# aggriation
+aggr <- fread(raw[grepl('data_aggr', raw)], drop = 'V1')
 
 # Life stages
 life <- readRDS(derived[grepl('ego', derived)])
-
 
 ### Prep ----
 aggr[, sessiondate := as.IDate(sessiondate)]
 aggr[, aggressiontime := as.ITime(aggressiontime)]
 
-### Observed ----
-#TODO: how do we build aggression networks?
+### Make networks for each ego*life stage ----
+# Set up parallel with doParallel and foreach
+doParallel::registerDoParallel()
 
+life <- life[1:5]
+
+# To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
+aggr[, idate := sessiondate]
+
+#  average of behavior1 during period
+countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	focal <- aggr[life[i],
+								 on = .(sessiondate >= period_start,
+								 			 sessiondate < period_end)]
+	focal[, mean(behavior1), by = aggressor]
+}
+
+# Generate a GBI for each ego's life stage
+gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	sub <- asso[life[i],
+							on = .(sessiondate >= period_start,
+										 sessiondate < period_end)]
+
+	# Filter out < 10
+	get_gbi(sub[get(idCol) %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+					groupCol, idCol)
+}
+
+# Calculate TWI
+source('R/twi.R')
+twiLs <- foreach(g = gbiLs) %dopar% {
+	twi(g)
+}
+
+# Create edge list
+edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+				by.y = c('Var1', 'Var2'), all.x = TRUE)
+}
+
+# Generate graph and calculate network metrics
+mets <- foreach(i = seq_along(edgeLs)) %dopar% {
+	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
+														 directed = TRUE)
+	E(g)$weight <- edgeLs[[i]][, .(w  = N / value)]
+
+	return(cbind(
+		data.table(
+			outdegree = degree(g, mode = 'out'),
+			indegree = degree(g, mode = 'in'),
+			# outstrength = strength(g, mode = 'out'),
+			# instrength = strength(g, mode = 'in'),
+			# TODO: do we need the edge weighting formula again?
+			# betweenness = betweenness(g, directed = TRUE),
+			ID = names(degree(g))
+		),
+		life[i]
+	))
+}
+
+out <- rbindlist(mets)
+
+### Output ----
+saveRDS(out, 'data/derived-data/aggriation-metrics.Rds')
