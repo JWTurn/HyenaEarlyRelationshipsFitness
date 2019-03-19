@@ -107,7 +107,7 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 			strength = strength(g, mode = 'total'),
 			outstrength = strength(g, mode = 'out'),
 			instrength = strength(g, mode = 'in'),
-			betweenness = betweenness(g, directed = FALSE,
+			betweenness = betweenness(g, directed = TRUE,
 																weights = (1/w)),
 			ID = names(degree(g))
 		),
@@ -121,7 +121,9 @@ setnames(out, 'ID', idCol)
 out <- out[hyena == ego]
 
 ### Output ----
-out %>% knitr::kable()
+out <- merge(life, out,
+			by = colnames(life), all.x = TRUE)
 
+knitr::kable(out)
 
 saveRDS(out, 'data/derived-data/affiliation-metrics.Rds')
