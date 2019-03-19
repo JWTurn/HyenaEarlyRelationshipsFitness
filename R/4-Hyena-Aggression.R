@@ -107,6 +107,10 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 out <- rbindlist(mets)
 setnames(out, 'ID', idCol)
 
+out <- out[hyena == ego]
 
 ### Output ----
+out %>% knitr::kable()
+
+
 saveRDS(out, 'data/derived-data/aggression-metrics.Rds')
