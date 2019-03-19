@@ -99,8 +99,10 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 
 	return(cbind(
 		data.table(
+			degree = degree(g, mode = 'total'),
 			outdegree = degree(g, mode = 'out'),
 			indegree = degree(g, mode = 'in'),
+			# strength = strength(g, mode = 'total'),
 			# outstrength = strength(g, mode = 'out'),
 			# instrength = strength(g, mode = 'in'),
 			# TODO: do we need the edge weighting formula again? -- Yes, we need to do it each time
