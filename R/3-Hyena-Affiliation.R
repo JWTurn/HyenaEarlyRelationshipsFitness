@@ -103,8 +103,9 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 			indegree = degree(g, mode = 'in'),
 			# outstrength = strength(g, mode = 'out'),
 			# instrength = strength(g, mode = 'in'),
-			# TODO: do we need the edge weighting formula again?
-			# betweenness = betweenness(g, directed = TRUE),
+			# TODO: do we need the edge weighting formula again? -- Yes, we need to do it each time
+			# betweenness = betweenness(g, directed = FALSE,
+			#		weights = (1/E(g)$weight)),
 			ID = names(degree(g))
 		),
 		life[i]
