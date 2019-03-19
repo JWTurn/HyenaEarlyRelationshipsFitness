@@ -84,23 +84,25 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	g <- graph_from_data_frame(edgeLs[[i]][, .(aggressor, recip)],
+	sub <- edgeLs[[i]][value != 0]
+	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 														 directed = TRUE)
 
 	# average of behavior1 during period/AI during period
-	E(g)$weight <- edgeLs[[i]][, .(w  = avgB1 / value)]
+	w <- sub[, avgB1 / value]
+	E(g)$weight <- w
 
-	return(cbind(
+	return(
+		cbind(
 		data.table(
 			degree = degree(g, mode = 'total'),
 			outdegree = degree(g, mode = 'out'),
 			indegree = degree(g, mode = 'in'),
-			# strength = strength(g, mode = 'total'),
-			# outstrength = strength(g, mode = 'out'),
-			# instrength = strength(g, mode = 'in'),
-			# TODO: do we need the edge weighting formula again? -- Yes
-			# betweenness = betweenness(g, directed = FALSE,
-			#		weights = (1/E(g)$weight)),
+			strength = strength(g, mode = 'total'),
+			outstrength = strength(g, mode = 'out'),
+			instrength = strength(g, mode = 'in'),
+			betweenness = betweenness(g, directed = TRUE),
+																weights = (1/w),
 			ID = names(degree(g))
 		),
 		life[i]
@@ -108,12 +110,15 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 }
 
 out <- rbindlist(mets)
+
+### Output ----
 setnames(out, 'ID', idCol)
 
 out <- out[hyena == ego]
 
-### Output ----
-out %>% knitr::kable()
+out <- merge(life, out,
+						 by = colnames(life), all.x = TRUE)
 
+knitr::kable(out)
 
 saveRDS(out, 'data/derived-data/aggression-metrics.Rds')
