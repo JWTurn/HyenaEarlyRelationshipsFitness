@@ -95,28 +95,25 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	# x <- na.omit(edgeLs[[i]])[!(count == 0 & value == 0), w := count / value]
-	g <- graph_from_data_frame(
-		edgeLs[[i]][, .(ll_solicitor, ll_receiver)], directed = TRUE
-	)
-	# E()
-	# df <- data.frame(from=c("a", "b", "a"), to=c("b", "a", "b"))
-	# > g <- graph.data.frame(df)
-	# > E(g)$weight <- 1
-	# > g <- simplify(g, edge.attr.comb="sum")
+	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
+														 directed = TRUE)
+	E(g)$weight <- edgeLs[[i]][, .(w  = N / value)]
 
-
-	# cbind(data.table(
-	# 	degree = degree(g),
-	# 	strength = strength(g),
-	# 	betweenness = betweenness(g, directed = FALSE),
-	# 	ID = names(degree(g))
-	# ), life[n])
+	return(cbind(
+		data.table(
+			outdegree = degree(g, mode = 'out'),
+			indegree = degree(g, mode = 'in'),
+			# outstrength = strength(g, mode = 'out'),
+			# instrength = strength(g, mode = 'in'),
+			# TODO: do we need the edge weighting formula again?
+			# betweenness = betweenness(g, directed = TRUE),
+			ID = names(degree(g))
+		),
+		life[i]
+	))
 }
 
 out <- rbindlist(mets)
-setnames(out, 'ID', idCol)
-
 
 ### Output ----
-out
+saveRDS(out, 'data/derived-data/affiliation-metrics.Rds')
