@@ -13,15 +13,28 @@ lapply(libs, require, character.only = TRUE)
 raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
-# aggriation
+# Aggression
 aggr <- fread(raw[grepl('data_aggr', raw)], drop = 'V1')
 
 # Life stages
 life <- readRDS(derived[grepl('ego', derived)])
 
+# Association
+asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
+
 ### Prep ----
 aggr[, sessiondate := as.IDate(sessiondate)]
 aggr[, aggressiontime := as.ITime(aggressiontime)]
+
+aggr[, behavior1 := as.numeric(behavior1)]
+
+asso[, sessiondate := as.IDate(sessiondate)]
+asso[, yr := year(sessiondate)]
+
+asso[, group := .GRP, session]
+
+# Keep only relevant columns
+life <- life[, .(ego, period, period_start, period_end)]
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
@@ -29,15 +42,18 @@ doParallel::registerDoParallel()
 
 life <- life[1:5]
 
+groupCol <- 'group'
+idCol <- 'hyena'
+
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 aggr[, idate := sessiondate]
 
 #  average of behavior1 during period
-countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- aggr[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-	focal[, mean(behavior1), by = aggressor]
+	focal[, .(avgB1 = mean(behavior1)), by = aggressor]
 }
 
 # Generate a GBI for each ego's life stage
@@ -61,7 +77,7 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+	merge(avgLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
 				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
@@ -69,6 +85,8 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
+
+	# average of behavior1 during period/AI during period
 	E(g)$weight <- edgeLs[[i]][, .(w  = N / value)]
 
 	return(cbind(
