@@ -95,19 +95,20 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
-	E(g)$weight <- edgeLs[[i]][, .(w  = N / value)]
+	# TODO: should the edge weight be inverted here too?
+	w <- edgeLs[[i]][, N / value]
+	E(g)$weight <- w
 
 	return(cbind(
 		data.table(
 			degree = degree(g, mode = 'total'),
 			outdegree = degree(g, mode = 'out'),
 			indegree = degree(g, mode = 'in'),
-			# strength = strength(g, mode = 'total'),
-			# outstrength = strength(g, mode = 'out'),
-			# instrength = strength(g, mode = 'in'),
-			# TODO: do we need the edge weighting formula again? -- Yes, we need to do it each time
-			# betweenness = betweenness(g, directed = FALSE,
-			#		weights = (1/E(g)$weight)),
+			strength = strength(g, mode = 'total'),
+			outstrength = strength(g, mode = 'out'),
+			instrength = strength(g, mode = 'in'),
+			betweenness = betweenness(g, directed = FALSE,
+																weights = (1/w)),
 			ID = names(degree(g))
 		),
 		life[i]
