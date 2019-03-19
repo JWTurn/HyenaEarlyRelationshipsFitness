@@ -6,7 +6,7 @@
 # undirected, Twice weight index
 
 ### Packages ----
-libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
+libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach', 'doParallel')
 lapply(libs, require, character.only = TRUE)
 
 
@@ -66,8 +66,8 @@ twiLs <- foreach(g = gbiLs) %dopar% {
 }
 
 # Generate graph and calculate network metrics
-mets <- foreach(n = seq_along(netLs)) %dopar% {
-	g <- graph.adjacency(netLs[[n]], 'undirected',
+mets <- foreach(n = seq_along(twiLs)) %dopar% {
+	g <- graph.adjacency(twiLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
 	cbind(data.table(
