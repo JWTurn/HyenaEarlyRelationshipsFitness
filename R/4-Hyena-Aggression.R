@@ -40,8 +40,6 @@ life <- life[, .(ego, period, period_start, period_end)]
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[1:5]
-
 groupCol <- 'group'
 idCol <- 'hyena'
 
