@@ -82,6 +82,7 @@ source('R/twi.R')
 twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
+### would it make sense to save the twiLs from association script then call it in her and in the aggressions script?
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
