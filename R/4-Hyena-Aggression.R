@@ -114,11 +114,9 @@ out <- rbindlist(mets)
 ### Output ----
 setnames(out, 'ID', idCol)
 
-out <- out[hyena == ego]
+egos <- out[hyena == ego]
 
-out <- merge(life, out,
-						 by = colnames(life), all.x = TRUE)
+allegos <- merge(life, egos,
+								 by = colnames(life), all.x = TRUE)
 
-knitr::kable(out)
-
-saveRDS(out, 'data/derived-data/aggression-metrics.Rds')
+saveRDS(allegos, 'data/derived-data/aggression-metrics.Rds')

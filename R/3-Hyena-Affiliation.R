@@ -109,7 +109,7 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 			affil_outstrength = strength(g, mode = 'out'),
 			affil_instrength = strength(g, mode = 'in'),
 			affil_betweenness = betweenness(g, directed = TRUE,
-																weights = (1/w)),
+																			weights = (1/w)),
 			ID = names(degree(g))
 		),
 		life[i]
