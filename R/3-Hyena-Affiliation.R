@@ -52,7 +52,7 @@ setnames(affil, 'll_reciever', 'll_receiver')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[1:5]
+life <- life[1:50]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 affil[, idate := sessiondate]
@@ -94,10 +94,12 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	g <- graph_from_data_frame(edgeLs[[i]][, .(ll_solicitor, ll_receiver)],
+# mets <- lapply(seq_along(edgeLs), function(i) {
+	sub <- edgeLs[[i]][value != 0]
+	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
 	# TODO: should the edge weight be inverted here too?
-	w <- edgeLs[[i]][, N / value]
+	w <- sub[, N / value]
 	E(g)$weight <- w
 
 	return(cbind(
