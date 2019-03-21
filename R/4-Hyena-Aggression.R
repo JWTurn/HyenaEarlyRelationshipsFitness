@@ -82,7 +82,7 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	sub <- edgeLs[[i]][value != 0]
+	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
 	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 														 directed = TRUE)
 
@@ -108,6 +108,7 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 }
 
 out <- rbindlist(mets)
+out
 
 ### Output ----
 setnames(out, 'ID', idCol)
