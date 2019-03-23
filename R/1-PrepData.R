@@ -13,7 +13,7 @@ raw <- 'data/raw-data/'
 life <- fread(paste0(raw, 'lifeperiods.csv'), drop = 'V1')
 
 # Egos
-egos <- fread(paste0(raw, 'egos_filtered.csv'), drop = 'V1')
+egos <- fread(paste0(raw, 'egos_filtered.csv'))
 
 # Affiliation
 affil <- fread(paste0(raw, 'data_affiliations.csv'), drop = 'V1')
