@@ -38,14 +38,6 @@ Alec Robitaille
 
 ``` bash
 grep -rni 'R/' -e 'TODO';
-#> R/3-Hyena-Affiliation.R:24:#TODO: how do we build affiliation networks?
-#> R/3-Hyena-Affiliation.R:55:#TODO: what kind of association index?
-#> R/3-Hyena-Affiliation.R:64:  # TODO: Are these the network metrics you want? Add them here...
-#> R/2-Hyena-Association.R:60:#TODO: twice-weight index
-#> R/2-Hyena-Association.R:69:  # TODO: Are these the network metrics you want? Add them here...
-#> R/1-PrepData.R:20:#TODO: which egos to filter out? (put it here)
-#> R/1-PrepData.R:34:#TODO: why?
-#> R/4-Hyena-Aggression.R:23:#TODO: how do we build aggression networks?
 #> R/.fyinterest.R:26:# TODO: why nulls in sessiondate?
 #> R/.fyinterest.R:38:  #TODO: what association index?
 #> R/.fyinterest.R:48:  #TODO: which network metrics?
