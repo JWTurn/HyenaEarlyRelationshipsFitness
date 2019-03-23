@@ -1,62 +1,33 @@
 ### Hyena/Spatsoc - Affiliation ====
 # Alec Robitaille
-# March 01 2019
-
-### Notes ----
-# directed, count of affiliations during period/AI during period
-
+# Started: March 01 2019
 
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
 # Affiliation
-affil <- fread(raw[grepl('affil', raw)], drop = 'V1')
+affil <- readRDS(derived[grepl('prep-affil', derived)])
 
 # Life stages
-life <- readRDS(derived[grepl('ego', derived)])
+life <- readRDS(derived[grepl('ego-life', derived)])
 
 # Association
-asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
+asso <- readRDS(derived[grepl('prep-asso', derived)])
 
-### Prep ----
-# Date columns
-affil[, sessiondate := as.IDate(sessiondate)]
-affil[, yr := year(sessiondate)]
-
-periods <- c('period_start', 'period_end')
-life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
-
-# Cast session to an integer group column
-# affil[, group := .GRP, session]
-
-asso[, sessiondate := as.IDate(sessiondate)]
-asso[, yr := year(sessiondate)]
-
-asso[, group := .GRP, session]
-
-
-# Keep only relevant columns
-life <- life[, .(ego, period, period_start, period_end)]
-
+## Set column names
 groupCol <- 'group'
 idCol <- 'hyena'
-
-setnames(affil, 'll_reciever', 'll_receiver')
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-# life <- life[1:50]
-
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 affil[, idate := sessiondate]
-
 
 # Count number of (directed) affiliations between individuals
 countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
@@ -82,7 +53,6 @@ source('R/twi.R')
 twiLs <- foreach(g = gbiLs) %dopar% {
 	twi(g)
 }
-### would it make sense to save the twiLs from association script then call it in her and in the aggressions script?
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
