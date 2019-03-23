@@ -1,19 +1,25 @@
 ### Prep Hyena Data ====
 # Alec Robitaille
-# Started: March 05 2019
+# Started: March 01 2019
 
 ### Packages ----
 libs <- c('data.table')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-raw <- dir('data/raw-data', full.names = TRUE)
+raw <- 'data/raw-data/'
 
 # Life stages
-life <- fread(raw[grepl('lifeperiods.csv', raw)], drop = 'V1')
+life <- fread(paste0(raw, 'lifeperiods.csv'), drop = 'V1')
 
 # Egos
-egos <- fread(raw[grepl('egos_filt', raw)])
+egos <- fread(paste0(raw, 'egos_filtered.csv'), drop = 'V1')
+
+# Affiliation
+affil <- fread(paste0(raw, 'data_affiliations.csv'), drop = 'V1')
+
+# Association
+asso <- fread(paste0(raw, 'data_associations.csv'), drop = 'V1')
 
 ### Prep data ----
 # Keep only relevant columns
