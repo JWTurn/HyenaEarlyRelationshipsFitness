@@ -66,4 +66,4 @@ setnames(out, 'ID', idCol)
 out <- out[hyena == ego]
 
 ### Output ----
-saveRDS(out, 'data/derived-data/association-twi.Rds')
+saveRDS(out, 'data/derived-data/association-metrics.Rds')
