@@ -1,9 +1,7 @@
-### Hyena/Spatsoc - Association ====
+### Hyena Network Randomizations ====
 # Alec Robitaille
-# March 01 2019
+# Started: March 01 2019
 
-### Notes ----
-# undirected, Twice weight index
 
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph')

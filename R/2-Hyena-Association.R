@@ -1,4 +1,4 @@
-### Hyena/Spatsoc - Association ====
+### Hyena Association Networks ====
 # Alec Robitaille
 # Started: March 01 2019
 

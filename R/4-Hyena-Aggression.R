@@ -1,4 +1,4 @@
-### Hyena/Spatsoc - Aggression ====
+### Hyena Aggression Networks ====
 # Alec Robitaille
 # Started: March 01 2019
 
