@@ -63,3 +63,7 @@ saveRDS(life, 'data/derived-data/filtered-ego-lifestages.Rds')
 saveRDS(asso, 'data/derived-data/prep-association.Rds')
 saveRDS(affil, 'data/derived-data/prep-affiliation.Rds')
 saveRDS(aggr, 'data/derived-data/prep-aggression.Rds')
+
+
+###
+message('=== DATA PREP COMPLETE ===')

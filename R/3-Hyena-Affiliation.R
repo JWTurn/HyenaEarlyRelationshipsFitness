@@ -96,3 +96,6 @@ allegos <- merge(life, egos,
 								 by = colnames(life), all.x = TRUE)
 
 saveRDS(allegos, 'data/derived-data/affiliation-metrics.Rds')
+
+###
+message('=== AFFILIATION NETWORK COMPLETE ===')

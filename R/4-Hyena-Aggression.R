@@ -101,3 +101,7 @@ allegos <- merge(life, egos,
 								 by = colnames(life), all.x = TRUE)
 
 saveRDS(allegos, 'data/derived-data/aggression-metrics.Rds')
+
+
+###
+message('=== AGGRESSION NETWORK COMPLETE ===')

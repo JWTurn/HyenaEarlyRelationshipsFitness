@@ -67,3 +67,6 @@ out <- out[hyena == ego]
 
 ### Output ----
 saveRDS(out, 'data/derived-data/association-metrics.Rds')
+
+###
+message('=== ASSOCIATION NETWORK COMPLETE ===')
