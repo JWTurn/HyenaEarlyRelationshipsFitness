@@ -1,47 +1,30 @@
 ### Hyena/Spatsoc - Aggression ====
 # Alec Robitaille
-# March 01 2019
-
-### Notes ----
-# directed, average of behavior1 during period/AI during period
+# Started: March 01 2019
 
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
 
 # Aggression
-aggr <- fread(raw[grepl('data_aggr', raw)], drop = 'V1')
+aggr <- readRDS(derived[grepl('prep-aggr', derived)])
 
 # Life stages
-life <- readRDS(derived[grepl('ego', derived)])
+life <- readRDS(derived[grepl('ego-life', derived)])
 
 # Association
-asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
+asso <- readRDS(derived[grepl('prep-asso', derived)])
 
-### Prep ----
-aggr[, sessiondate := as.IDate(sessiondate)]
-aggr[, aggressiontime := as.ITime(aggressiontime)]
-
-aggr[, behavior1 := as.numeric(behavior1)]
-
-asso[, sessiondate := as.IDate(sessiondate)]
-asso[, yr := year(sessiondate)]
-
-asso[, group := .GRP, session]
-
-# Keep only relevant columns
-life <- life[, .(ego, period, period_start, period_end)]
+## Set column names
+groupCol <- 'group'
+idCol <- 'hyena'
 
 ### Make networks for each ego*life stage ----
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
-
-groupCol <- 'group'
-idCol <- 'hyena'
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 aggr[, idate := sessiondate]
@@ -108,7 +91,6 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 }
 
 out <- rbindlist(mets)
-out
 
 ### Output ----
 setnames(out, 'ID', idCol)
