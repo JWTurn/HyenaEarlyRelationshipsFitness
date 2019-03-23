@@ -1,9 +1,6 @@
 ### Hyena/Spatsoc - Association ====
 # Alec Robitaille
-# March 01 2019
-
-### Notes ----
-# undirected, Twice weight index
+# Started: March 01 2019
 
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach', 'doParallel')
@@ -11,31 +8,15 @@ lapply(libs, require, character.only = TRUE)
 
 
 ### Import data ----
-raw <- dir('data/raw-data', full.names = TRUE)
 derived <- dir('data/derived-data', full.names = TRUE)
-asso <- fread(raw[grepl('asso', raw)], drop = 'V1')
+
+# Associations
+asso <- readRDS(derived[grepl('prep-asso', derived)])
 
 # Life stages
-life <- readRDS(derived[grepl('ego', derived)])
+life <- readRDS(derived[grepl('ego-life', derived)])
 
-
-### Prep ----
-# Date columns
-asso[, sessiondate := as.IDate(sessiondate)]
-asso[, yr := year(sessiondate)]
-
-# sessionrange <- c('start', 'stop')
-# asso[, (sessionrange) := lapply(.SD, as.ITime), .SDcols = (sessionrange)]
-
-period <- c('period_start', 'period_end')
-life[, (period) := lapply(.SD, as.IDate), .SDcols = (period)]
-
-# Cast session to an integer group column
-asso[, group := .GRP, session]
-
-# Keep only relevant columns
-life <- life[, .(ego, period, period_start, period_end)]
-
+## Set column names
 groupCol <- 'group'
 idCol <- 'hyena'
 
@@ -85,6 +66,4 @@ setnames(out, 'ID', idCol)
 out <- out[hyena == ego]
 
 ### Output ----
-out %>% knitr::kable()
-
 saveRDS(out, 'data/derived-data/association-twi.Rds')
