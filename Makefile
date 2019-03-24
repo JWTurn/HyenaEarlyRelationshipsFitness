@@ -1,24 +1,27 @@
 ### Makefile
 # Alec Robitaille
 
+#  (all is a build target that is not a filename)
 .PHONY: all
 
+# Assign variables
 der = data/derived-data
 raw = data/raw-data
 
-all: aggression-metrics.Rds affiliation-metrics.Rds association-metrics.Rds
+# Fake
+all: $(der)/aggression-metrics.Rds $(der)/affiliation-metrics.Rds $(der)/association-metrics.Rds
 	echo "complete"
 
 # 4 - Aggression
-aggression-metrics.Rds: R/4-Hyena-Aggression.R $(der)/prep-aggression.Rds
+$(der)/aggression-metrics.Rds: R/4-Hyena-Aggression.R $(der)/prep-aggression.Rds
 	Rscript "R/4-Hyena-Aggression.R"
 
 # 3 - Affiliation
-affiliation-metrics.Rds: R/3-Hyena-Affiliation.R $(der)/prep-affiliation.Rds
+$(der)/affiliation-metrics.Rds: R/3-Hyena-Affiliation.R $(der)/prep-affiliation.Rds
 	Rscript "R/3-Hyena-Affiliation.R"
 
 # 2 - Association
-association-metrics.Rds: R/2-Hyena-Association.R $(der)/prep-association.Rds
+$(der)/association-metrics.Rds: R/2-Hyena-Association.R $(der)/prep-association.Rds
 	Rscript "R/2-Hyena-Association.R"
 
 # 1 - Prep
