@@ -44,6 +44,21 @@ DT <- merge(
 )
 keep <- c(keep, 'll_solicitor', 'll_receiver')
 
-# TODO: why are there 2000 rows where the session
+# TODO: why are there 75 sessions with mismatching sessiondates
+DT <- DT[sessiondate.x == sessiondate.y & yr.x == yr.y]
+setnames(DT, c('yr.x', 'sessiondate.x'), c('yr', 'sessiondate'))
 DT <- DT[, .SD, .SDcols = keep]
+
+
+### Fill NAs ----
+# Where hyena is not either the aggressor or the recipient
+DT[hyena != aggressor & hyena != recip,
+	 c('aggressor', 'recip') := NA]
+
+DT[hyena != ll_solicitor & hyena != ll_receiver,
+	 c('ll_solicitor', 'll_receiver') := NA]
+
+# TODO: use all AND unique to gather all individuals in each session, from association, affiliation and aggression
+# TODO: fill with NAs wherever repeated (careful with direction and repeated affil/aggressions)
+# TODO: randomize both columns of the directed networks
 
