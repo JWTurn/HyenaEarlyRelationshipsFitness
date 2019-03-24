@@ -44,9 +44,9 @@ DT <- merge(
 )
 keep <- c(keep, 'll_solicitor', 'll_receiver')
 
-# TODO: why are there 75 sessions with mismatching sessiondates
-DT <- DT[sessiondate.x == sessiondate.y & yr.x == yr.y]
-setnames(DT, c('yr.x', 'sessiondate.x'), c('yr', 'sessiondate'))
+# NOTE: there are 75 sessions with mismatching sessiondates, and some mismatching years
+DT[, sessiondate := sessiondate.x]
+DT[, yr := yr.x]
 DT <- DT[, .SD, .SDcols = keep]
 
 
