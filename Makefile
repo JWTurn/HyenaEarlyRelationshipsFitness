@@ -1,12 +1,13 @@
 ### Makefile
 # Alec Robitaille
 
+.PHONY: all
+
 der = data/derived-data
 raw = data/raw-data
 
 all: aggression-metrics.Rds affiliation-metrics.Rds association-metrics.Rds
 	echo "complete"
-
 
 # 4 - Aggression
 aggression-metrics.Rds: R/4-Hyena-Aggression.R $(der)/prep-aggression.Rds
