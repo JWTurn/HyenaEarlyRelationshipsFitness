@@ -32,6 +32,42 @@ idCol <- 'hyena'
 
 
 ### Merge network data together ----
+# Count the number of affiliations (edges) in each session
+affil[, countAffil := .N, session]
+
+# Count the number of individuals associating in each session
+asso[, countAsso := .N, session]
+
+
+# Merge all individuals observed in each session
+#  from associations, onto affiliations
+DT <- merge(
+	affil, asso,
+	by = 'session', allow.cartesian = TRUE
+)
+
+randomizations.directed <- function(DT, id, count, by) {
+	DT[, {
+		size <- .SD[[2]][[1]]
+		if (length(unique(.SD[[1]])) > size) {
+			l <- sample(.SD[[1]], size = size)
+			r <- sample(.SD[[1]], size = size)
+
+			while (any(l == r)) {
+				l <- sample(.SD[[1]], size = size)
+				r <- sample(.SD[[1]], size = size)
+			}
+			list(ll_solicitor = l, ll_receiver = r)
+		}
+	}, by = by, .SDcols = c(id, count)]
+}
+
+
+randomizations.directed(
+	DT, 'hyena', 'countAffil', 'session'
+)
+
+
 keep <- colnames(asso)
 assoaggr <- merge(
 	asso, aggr, allow.cartesian = TRUE,
