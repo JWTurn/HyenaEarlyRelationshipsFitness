@@ -46,6 +46,7 @@ periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
 affil[, sessiondate := as.IDate(sessiondate)]
+affil[, datetime := as.POSIXct(paste(sessiondate, grtTime))]
 affil[, yr := year(sessiondate)]
 
 asso[, sessiondate := as.IDate(sessiondate)]
@@ -56,6 +57,10 @@ aggr[, aggressiontime := as.ITime(aggressiontime)]
 
 ## Typo
 setnames(affil, 'll_reciever', 'll_receiver')
+
+
+## Temporal grouping
+group_times(affil, 'datetime')
 
 ### Output ----
 # Output to derived-data
