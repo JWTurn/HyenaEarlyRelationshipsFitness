@@ -50,4 +50,5 @@ knitr::opts_chunk$set(
 
 ```{bash}
 grep -rni 'R/' -e 'TODO';
+grep -rni 'R/' -e 'NOTE';
 ```
