@@ -30,6 +30,8 @@ affil <- readRDS(derived[grepl('prep-affil', derived)])
 groupCol <- 'group'
 idCol <- 'hyena'
 
+## Iterations
+iterations <- 3
 
 ### Merge network data together ----
 # Count the number of affiliations (edges) in each session
