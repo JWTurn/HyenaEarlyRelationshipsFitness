@@ -47,6 +47,7 @@ DT <- merge(
 	affil, asso,
 	by = 'session', allow.cartesian = TRUE
 )
+DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 
 randomizations.directed <- function(DT, id, count, by) {
 	DT[, {
@@ -64,23 +65,14 @@ randomizations.directed <- function(DT, id, count, by) {
 	}, by = by, .SDcols = c(id, count)]
 }
 
+lapply(seq(1, iterations), function(i) {
+	rand <- randomizations.directed(
+		DT, id = 'hyena', count = 'countAffil', by = 'session'
+	)
 
-randomizations.directed(
-	DT, 'hyena', 'countAffil', 'session'
-)
 
+})
 
-keep <- colnames(asso)
-assoaggr <- merge(
-	asso, aggr, allow.cartesian = TRUE,
-	by = 'session'
-)
-keep <- c(keep, 'aggressor', 'recip', 'behavior1')
-DT <- merge(
-	assoaggr, affil,
-	by = 'session', allow.cartesian = TRUE
-)
-keep <- c(keep, 'll_solicitor', 'll_receiver')
 
 # NOTE: there are 75 sessions with mismatching sessiondates, and some mismatching years
 DT[, sessiondate := sessiondate.x]
