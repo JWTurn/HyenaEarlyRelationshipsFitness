@@ -49,7 +49,8 @@ DT <- merge(
 )
 DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 
-randomizations.directed <- function(DT, id, count, by) {
+### Directed randomizations function ----
+randomizations.directed <- function(DT, id, count, by, cols) {
 	DT[, {
 		size <- .SD[[2]][[1]]
 		if (length(unique(.SD[[1]])) > size) {
@@ -60,24 +61,99 @@ randomizations.directed <- function(DT, id, count, by) {
 				l <- sample(.SD[[1]], size = size)
 				r <- sample(.SD[[1]], size = size)
 			}
-			list(ll_solicitor = l, ll_receiver = r)
+			list(l, r, .SD[[3]])
 		}
-	}, by = by, .SDcols = c(id, count)]
+	}, by = by, .SDcols = c(id, count, cols)]
 }
 
-lapply(seq(1, iterations), function(i) {
-	rand <- randomizations.directed(
-		DT, id = 'hyena', count = 'countAffil', by = 'session'
-	)
 
+### Randomize affiliation networks ----
+source('R/twi.R')
+
+# Count number of (directed) affiliations between individuals
+randMets <- lapply(seq(1, iterations), function(r) {
+	rand <- randomizations.directed(DT,
+																	id = 'hyena',
+																	count = 'countAffil',
+																	by = 'session',
+																	cols = 'sessiondate')
+	setnames(rand, c('session', 'll_solicitor', 'll_receiver', 'sessiondate'))
+	countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+		focal <- rand[life[i],
+									 on = .(sessiondate >= period_start,
+									 			 sessiondate < period_end)]
+		focal[, .N, .(ll_receiver, ll_solicitor)]
+	}
+
+	# Generate a GBI for each ego's life stage
+	gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+		sub <- asso[life[i],
+								on = .(sessiondate >= period_start,
+											 sessiondate < period_end)]
+
+		# Filter out < 10
+		get_gbi(sub[get(idCol) %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+						groupCol, idCol)
+	}
+
+	# Calculate TWI
+	twiLs <- foreach(g = gbiLs) %dopar% {
+		twi(g)
+	}
+
+
+	# Create edge list
+	edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+					by.y = c('Var1', 'Var2'), all.x = TRUE)
+	}
+
+	# Generate graph and calculate network metrics
+	mets <- foreach(i = seq_along(edgeLs)) %dopar% {
+		sub <- edgeLs[[i]][value != 0]
+		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
+															 directed = TRUE)
+		w <- sub[, N / value]
+		E(g)$weight <- w
+
+		return(cbind(
+			data.table(
+				affil_degree = degree(g, mode = 'total'),
+				affil_outdegree = degree(g, mode = 'out'),
+				affil_indegree = degree(g, mode = 'in'),
+				affil_strength = strength(g, mode = 'total'),
+				affil_outstrength = strength(g, mode = 'out'),
+				affil_instrength = strength(g, mode = 'in'),
+				affil_betweenness = betweenness(g, directed = TRUE,
+																				weights = (1/w)),
+				ID = names(degree(g))
+			),
+			life[i]
+		))
+
+		#TODO: add iteration
+	}
 
 })
 
 
-# NOTE: there are 75 sessions with mismatching sessiondates, and some mismatching years
-DT[, sessiondate := sessiondate.x]
-DT[, yr := yr.x]
-DT <- DT[, .SD, .SDcols = keep]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ### Fill NAs ----
@@ -87,8 +163,3 @@ DT[hyena != aggressor & hyena != recip,
 
 DT[hyena != ll_solicitor & hyena != ll_receiver,
 	 c('ll_solicitor', 'll_receiver') := NA]
-
-# TODO: use all AND unique to gather all individuals in each session, from association, affiliation and aggression
-# TODO: fill with NAs wherever repeated (careful with direction and repeated affil/aggressions)
-# TODO: randomize both columns of the directed networks
-
