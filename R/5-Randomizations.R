@@ -36,15 +36,8 @@ affil[, countAffil := .N, session]
 # Count the number of individuals associating in each session
 asso[, countAsso := .N, session]
 
-
-# Merge all individuals observed in each session
-#  from associations, onto affiliations
-DT <- merge(
-	affil, asso,
-	by = 'session', allow.cartesian = TRUE
-)
-DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
-DT <- DT[, .SD, .SDcols = c(colnames(asso), 'grtTime', 'll_receiver', 'll_solicitor', 'countAffil')]
+# Count the number of aggressions (edges) in each session
+aggr[, countAggr := .N, session]
 
 ### Directed randomizations function ----
 randomizations.directed <- function(DT, id, count, by, nms) {
@@ -71,36 +64,66 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-# To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
-DT[, idate := sessiondate]
-
-
-# Count number of (directed) affiliations between individuals
+# Randomization --------------------------------------------------
 randMets <- foreach(iter = seq(1, iterations)) %dopar% {
+	# Randomize association IDs
 	asso[, randHyena := sample(hyena)]
+
+	## Affiliation -------------------------------------------------
+	# Merge affiliation and association
 	DT <- merge(
 		affil, asso,
 		by = 'session', allow.cartesian = TRUE
 	)
-	DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
-	DT <- DT[, .SD, .SDcols = c(colnames(asso), 'grtTime', 'll_receiver', 'll_solicitor', 'countAffil')]
 
+	# Match the sessiondates/yrs to association data
+	DT[, c('sessiondate', 'yr') := .(sessiondate.y, yr.y)]
 
-	rand <- randomizations.directed(DT,
-																	id = 'randHyena',
-																	count = 'countAffil',
-																	by = 'session',
-																	cols = 'sessiondate')
-	setnames(rand, c('session', 'll_solicitor', 'll_receiver', 'sessiondate'))
+	# Set output names of left and right randomized IDs
+	nms <- c('ll_receiver', 'll_solicitor')
+
+	# Randomize affiliation data
+	randAffil <- randomizations.directed(
+		DT, id = 'randHyena', count = 'countAffil',
+		by = 'session', nms = nms
+	)
+
+	# Count matching edges
 	countLs <- foreach(i = seq(1, nrow(life))) %do% {
-		focal <- rand[life[i],
+		focal <- randAffil[life[i],
 									 on = .(sessiondate >= period_start,
 									 			 sessiondate < period_end)]
 		focal[, .N, .(ll_receiver, ll_solicitor)]
 	}
 
-	# TODO: add aggression
+	## Aggression -------------------------------------------------
+	# Merge aggression and association
+	DT <- merge(
+		aggr, asso,
+		by = 'session', allow.cartesian = TRUE
+	)
 
+	# Match the sessiondates/yrs to association data
+	DT[, sessiondate := sessiondate.y]
+
+	# Set output names of left and right randomized IDs
+	nms <- c('aggressor', 'recip')
+
+	# Randomize aggression data
+	randAggr <- randomizations.directed(
+		DT, id = 'randHyena', count = 'countAggr',
+		by = 'session', nms = nms
+	)
+
+	#  average of behavior1 during period
+	avgLs <- foreach(i = seq(1, nrow(life))) %do% {
+		focal <- randAggr[life[i],
+									on = .(sessiondate >= period_start,
+												 sessiondate < period_end)]
+		focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
+	}
+
+	## Association -------------------------------------------------
 	# Generate a GBI for each ego's life stage
 	gbiLs <- foreach(i = seq(1, nrow(life))) %do% {
 		sub <- asso[life[i],
@@ -117,8 +140,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		twi(g)
 	}
 
-
-	# Create edge list
+	## Combine edges -----------------------------------------------
 	edgeLs <- foreach(i = seq(1, nrow(life))) %do% {
 		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
