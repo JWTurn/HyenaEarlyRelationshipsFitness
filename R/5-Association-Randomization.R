@@ -147,15 +147,6 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		))
 		#TODO: add iteration
 	}
-
 }
 
-
-
-### Fill NAs ----
-# Where hyena is not either the aggressor or the recipient
-DT[hyena != aggressor & hyena != recip,
-	 c('aggressor', 'recip') := NA]
-
-DT[hyena != ll_solicitor & hyena != ll_receiver,
-	 c('ll_solicitor', 'll_receiver') := NA]
+out <- rbindlist(do.call(c, randMets))
