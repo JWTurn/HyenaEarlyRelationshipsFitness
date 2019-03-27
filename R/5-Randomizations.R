@@ -47,22 +47,23 @@ DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 DT <- DT[, .SD, .SDcols = c(colnames(asso), 'grtTime', 'll_receiver', 'll_solicitor', 'countAffil')]
 
 ### Directed randomizations function ----
-randomizations.directed <- function(DT, id, count, by, cols) {
-	DT[, {
-		size <- .SD[[2]][[1]]
-		if (length(unique(.SD[[1]])) > size) {
-			l <- sample(.SD[[1]], size = size)
-			r <- sample(.SD[[1]], size = size)
+randomizations.directed <- function(DT, id, count, by, nms) {
+	DT[, (nms) := {
+		size <- get(count)[[1]]
+		ids <- get(id)
+
+		if (length(unique(ids)) > size) {
+			l <- sample(ids, size = size)
+			r <- sample(ids, size = size)
 
 			while (any(l == r)) {
-				l <- sample(.SD[[1]], size = size)
-				r <- sample(.SD[[1]], size = size)
+				l <- sample(ids, size = size)
+				r <- sample(ids, size = size)
 			}
-			list(l, r, .SD[[3]])
+			list(l, r)
 		}
-	}, by = by, .SDcols = c(id, count, cols)]
+	}, by = by, .SDcols = c(id, count)]
 }
-
 
 ### Randomize affiliation networks ----
 source('R/twi.R')
