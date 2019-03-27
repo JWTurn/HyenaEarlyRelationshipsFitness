@@ -177,8 +177,8 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 
 	## Generate graphs, return net metrics --------------------------
 	mets <- foreach(i = seq_along(edgeLs)) %do% {
-		affilG <- affilGraphs[i]
-		aggrG <- aggrGraphs[i]
+		affilG <- affilGraphs[[i]]
+		aggrG <- aggrGraphs[[i]]
 
 		affilMets <- data.table(
 			affil_degree = degree(affilG, mode = 'total'),
