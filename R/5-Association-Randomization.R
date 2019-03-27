@@ -3,10 +3,6 @@
 # Started: March 01 2019
 
 
-### Hyena Affiliation Networks ====
-# Alec Robitaille
-# Started: March 01 2019
-
 ### Packages ----
 libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
@@ -48,6 +44,7 @@ DT <- merge(
 	by = 'session', allow.cartesian = TRUE
 )
 DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
+DT <- DT[, .SD, .SDcols = c(colnames(asso), 'grtTime', 'll_receiver', 'll_solicitor', 'countAffil')]
 
 ### Directed randomizations function ----
 randomizations.directed <- function(DT, id, count, by, cols) {
@@ -70,15 +67,30 @@ randomizations.directed <- function(DT, id, count, by, cols) {
 ### Randomize affiliation networks ----
 source('R/twi.R')
 
+# Set up parallel with doParallel and foreach
+doParallel::registerDoParallel()
+
+# To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
+DT[, idate := sessiondate]
+
 # Count number of (directed) affiliations between individuals
-randMets <- lapply(seq(1, iterations), function(r) {
+randMets <- foreach(iter = seq(1, iterations)) %dopar% {
+	asso[, randHyena := sample(hyena)]
+	DT <- merge(
+		affil, asso,
+		by = 'session', allow.cartesian = TRUE
+	)
+	DT[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
+	DT <- DT[, .SD, .SDcols = c(colnames(asso), 'grtTime', 'll_receiver', 'll_solicitor', 'countAffil')]
+
+
 	rand <- randomizations.directed(DT,
-																	id = 'hyena',
+																	id = 'randHyena',
 																	count = 'countAffil',
 																	by = 'session',
 																	cols = 'sessiondate')
 	setnames(rand, c('session', 'll_solicitor', 'll_receiver', 'sessiondate'))
-	countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	countLs <- foreach(i = seq(1, nrow(life))) %do% {
 		focal <- rand[life[i],
 									 on = .(sessiondate >= period_start,
 									 			 sessiondate < period_end)]
@@ -86,7 +98,7 @@ randMets <- lapply(seq(1, iterations), function(r) {
 	}
 
 	# Generate a GBI for each ego's life stage
-	gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	gbiLs <- foreach(i = seq(1, nrow(life))) %do% {
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
@@ -97,13 +109,13 @@ randMets <- lapply(seq(1, iterations), function(r) {
 	}
 
 	# Calculate TWI
-	twiLs <- foreach(g = gbiLs) %dopar% {
+	twiLs <- foreach(g = gbiLs) %do% {
 		twi(g)
 	}
 
 
 	# Create edge list
-	edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	edgeLs <- foreach(i = seq(1, nrow(life))) %do% {
 		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 		merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
@@ -111,7 +123,7 @@ randMets <- lapply(seq(1, iterations), function(r) {
 	}
 
 	# Generate graph and calculate network metrics
-	mets <- foreach(i = seq_along(edgeLs)) %dopar% {
+	mets <- foreach(i = seq_along(edgeLs)) %do% {
 		sub <- edgeLs[[i]][value != 0]
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 															 directed = TRUE)
@@ -130,29 +142,13 @@ randMets <- lapply(seq(1, iterations), function(r) {
 																				weights = (1/w)),
 				ID = names(degree(g))
 			),
-			life[i]
+			life[i],
+			iteration = iter
 		))
-
 		#TODO: add iteration
 	}
 
-})
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
