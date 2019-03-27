@@ -24,7 +24,7 @@ affil <- readRDS(derived[grepl('prep-affil', derived)])
 
 ## Set column names
 groupCol <- 'group'
-idCol <- 'hyena'
+idCol <- 'randHyena'
 
 ## Iterations
 iterations <- 3
@@ -72,6 +72,7 @@ doParallel::registerDoParallel()
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 DT[, idate := sessiondate]
+
 
 # Count number of (directed) affiliations between individuals
 randMets <- foreach(iter = seq(1, iterations)) %dopar% {
@@ -144,9 +145,10 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			),
 			life[i],
 			iteration = iter
-		))
+		)[ID == ego])
 		#TODO: add iteration
 	}
 }
 
 out <- rbindlist(do.call(c, randMets))
+out
