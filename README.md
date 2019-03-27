@@ -39,13 +39,9 @@ Alec Robitaille
 ``` bash
 grep -rni 'R/' -e 'TODO';
 grep -rni 'R/' -e 'NOTE';
-#> R/.fyinterest.R:26:# TODO: why nulls in sessiondate?
-#> R/.fyinterest.R:38:  #TODO: what association index?
-#> R/.fyinterest.R:48:  #TODO: which network metrics?
-#> R/5-Association-Randomization.R:91:# TODO: use all AND unique to gather all individuals in each session, from association, affiliation and aggression
-#> R/5-Association-Randomization.R:92:# TODO: fill with NAs wherever repeated (careful with direction and repeated affil/aggressions)
-#> R/5-Association-Randomization.R:93:# TODO: randomize both columns of the directed networks
+#> R/5-Association-Randomization.R:101: # TODO: add aggression
+#> R/5-Association-Randomization.R:124:     # TODO: add aggression
+#> R/5-Association-Randomization.R:137:     # TODO: add aggression
 #> R/egonet_rand.R:228:  # note this is inefficient and doubles memory requirement, but only ~ 100,000 datapoints right now
 #> R/egonet_rand.R:244:  # note the merge command takes just two dfs as a time
-#> R/5-Association-Randomization.R:77:# NOTE: there are 75 sessions with mismatching sessiondates, and some mismatching years
 ```

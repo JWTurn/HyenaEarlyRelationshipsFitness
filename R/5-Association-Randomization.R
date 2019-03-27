@@ -98,6 +98,8 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		focal[, .N, .(ll_receiver, ll_solicitor)]
 	}
 
+	# TODO: add aggression
+
 	# Generate a GBI for each ego's life stage
 	gbiLs <- foreach(i = seq(1, nrow(life))) %do% {
 		sub <- asso[life[i],
@@ -119,6 +121,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	edgeLs <- foreach(i = seq(1, nrow(life))) %do% {
 		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		# TODO: add aggression
 		merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
 					by.y = c('Var1', 'Var2'), all.x = TRUE)
 	}
@@ -131,6 +134,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		w <- sub[, N / value]
 		E(g)$weight <- w
 
+		# TODO: add aggression
 		return(cbind(
 			data.table(
 				affil_degree = degree(g, mode = 'total'),
@@ -146,7 +150,6 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			life[i],
 			iteration = iter
 		)[ID == ego])
-		#TODO: add iteration
 	}
 }
 
