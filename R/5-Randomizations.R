@@ -140,39 +140,71 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		twi(g)
 	}
 
-	## Combine edges -----------------------------------------------
-	edgeLs <- foreach(i = seq(1, nrow(life))) %do% {
+	## Combine edges, make graphs  -------------------------------------
+	# Affiliations
+	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
 		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-		# TODO: add aggression
-		merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
-					by.y = c('Var1', 'Var2'), all.x = TRUE)
-	}
+		sub <-
+			merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+						by.y = c('Var1', 'Var2'), all.x = TRUE)[value != 0]
 
-	# Generate graph and calculate network metrics
-	mets <- foreach(i = seq_along(edgeLs)) %do% {
-		sub <- edgeLs[[i]][value != 0]
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 															 directed = TRUE)
 		w <- sub[, N / value]
 		E(g)$weight <- w
+		return(g)
+	}
 
-		# TODO: add aggression
-		return(cbind(
-			data.table(
-				affil_degree = degree(g, mode = 'total'),
-				affil_outdegree = degree(g, mode = 'out'),
-				affil_indegree = degree(g, mode = 'in'),
-				affil_strength = strength(g, mode = 'total'),
-				affil_outstrength = strength(g, mode = 'out'),
-				affil_instrength = strength(g, mode = 'in'),
-				affil_betweenness = betweenness(g, directed = TRUE,
-																				weights = (1/w)),
-				ID = names(degree(g))
-			),
-			life[i],
-			iteration = iter
-		)[ID == ego])
+	# Aggressions
+	aggrGraphs <- foreach(i = seq(1, nrow(life))) %do% {
+		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		sub <- merge(avgLs[[i]], twi, by.x = c('aggressor', 'recip'),
+								 by.y = c('Var1', 'Var2'), all.x = TRUE)[
+								 	value != 0 & (value / avgB1) != 0
+								 ]
+
+		g <- graph_from_data_frame(sub[, .(aggressor, recip)],
+															 directed = TRUE)
+
+		# average of behavior1 during period/AI during period
+		w <- sub[, avgB1 / value]
+		E(g)$weight <- w
+
+		return(g)
+	}
+
+	## Generate graphs, return net metrics --------------------------
+	mets <- foreach(i = seq_along(edgeLs)) %do% {
+		affilG <- affilGraphs[i]
+		aggrG <- aggrGraphs[i]
+
+		affilMets <- data.table(
+			affil_degree = degree(affilG, mode = 'total'),
+			affil_outdegree = degree(affilG, mode = 'out'),
+			affil_indegree = degree(affilG, mode = 'in'),
+			affil_strength = strength(affilG, mode = 'total'),
+			affil_outstrength = strength(affilG, mode = 'out'),
+			affil_instrength = strength(affilG, mode = 'in'),
+			affil_betweenness = betweenness(affilG, directed = TRUE,
+																			weights = (1/w)),
+			ID = names(degree(affilG))
+		)[ID == ego]
+
+		aggrMets <- data.table(
+			aggr_degree = degree(aggrG, mode = 'total'),
+			aggr_outdegree = degree(aggrG, mode = 'out'),
+			aggr_indegree = degree(aggrG, mode = 'in'),
+			aggr_strength = strength(aggrG, mode = 'total'),
+			aggr_outstrength = strength(aggrG, mode = 'out'),
+			aggr_instrength = strength(aggrG, mode = 'in'),
+			aggr_betweenness = betweenness(aggrG, directed = TRUE,
+																		 weights = (1/w)),
+			ID = names(degree(aggrG))
+		)[ID == ego]
+
+		return(cbind(affilMets, aggrMets, life[i], iteration = iter))
 	}
 }
 
