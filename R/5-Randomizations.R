@@ -64,6 +64,8 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
+life <- life[1:3]
+
 # Randomization --------------------------------------------------
 randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	# Randomize association IDs
@@ -143,10 +145,10 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	## Combine edges, make graphs  -------------------------------------
 	# Affiliations
 	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 		sub <-
-			merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+			merge(countLs[[i]], twiDT, by.x = c('ll_receiver', 'll_solicitor'),
 						by.y = c('Var1', 'Var2'), all.x = TRUE)[value != 0]
 
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
@@ -158,9 +160,9 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 
 	# Aggressions
 	aggrGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-		twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-		sub <- merge(avgLs[[i]], twi, by.x = c('aggressor', 'recip'),
+		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		sub <- merge(avgLs[[i]], twiDT, by.x = c('aggressor', 'recip'),
 								 by.y = c('Var1', 'Var2'), all.x = TRUE)[
 								 	value != 0 & (value / avgB1) != 0
 								 ]
@@ -176,7 +178,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	}
 
 	## Generate graphs, return net metrics --------------------------
-	mets <- foreach(i = seq_along(edgeLs)) %do% {
+	mets <- foreach(i = seq(1, nrow(life))) %do% {
 		affilG <- affilGraphs[[i]]
 		aggrG <- aggrGraphs[[i]]
 
@@ -188,9 +190,9 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			affil_outstrength = strength(affilG, mode = 'out'),
 			affil_instrength = strength(affilG, mode = 'in'),
 			affil_betweenness = betweenness(affilG, directed = TRUE,
-																			weights = (1/w)),
+																			weights = 1/E(affilG)$weight),
 			ID = names(degree(affilG))
-		)[ID == ego]
+		)
 
 		aggrMets <- data.table(
 			aggr_degree = degree(aggrG, mode = 'total'),
@@ -200,11 +202,11 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			aggr_outstrength = strength(aggrG, mode = 'out'),
 			aggr_instrength = strength(aggrG, mode = 'in'),
 			aggr_betweenness = betweenness(aggrG, directed = TRUE,
-																		 weights = (1/w)),
+																		 weights = 1/E(aggrG)$weight),
 			ID = names(degree(aggrG))
-		)[ID == ego]
+		)
 
-		return(cbind(affilMets, aggrMets, life[i], iteration = iter))
+		return(cbind(affilMets, aggrMets, life[i], iteration = iter)[ID == ego])
 	}
 }
 
