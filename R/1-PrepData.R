@@ -58,10 +58,6 @@ aggr[, aggressiontime := as.ITime(aggressiontime)]
 ## Typo
 setnames(affil, 'll_reciever', 'll_receiver')
 
-
-## Temporal grouping
-group_times(affil, 'datetime')
-
 ### Output ----
 # Output to derived-data
 saveRDS(life, 'data/derived-data/filtered-ego-lifestages.Rds')
