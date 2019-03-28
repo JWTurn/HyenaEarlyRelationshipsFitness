@@ -24,7 +24,6 @@ idCol <- 'hyena'
 doParallel::registerDoParallel()
 
 ### Count number of sessions and alone session ----
-# Generate a GBI for each ego's life stage
 nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
 	sub <- asso[life[i],
 							on = .(sessiondate >= period_start,

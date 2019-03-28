@@ -71,6 +71,21 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	# Randomize association IDs
 	asso[, randHyena := sample(hyena)]
 
+	## Count sessions ----------------------------------------------
+	nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
+		sub <- asso[life[i],
+								on = .(sessiondate >= period_start,
+											 sessiondate < period_end)]
+		ego <- sub$ego[[i]]
+		period <- sub$period[[i]]
+
+		uasso <- unique(sub[, .(hyena, session)])
+		uasso[, nSession := .N, session]
+		nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), hyena]
+		return(cbind(nsesh[hyena == ego], period))
+	})
+
+
 	## Affiliation -------------------------------------------------
 	# Merge affiliation and association
 	DT <- merge(
@@ -223,7 +238,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			aggrID = names(degree(aggrG))
 		)[aggrID == ego]
 
-		return(cbind(assoMets, affilMets, aggrMets,
+		return(cbind(nsesh, assoMets, affilMets, aggrMets,
 								 life[i], iteration = iter))
 	}
 }
