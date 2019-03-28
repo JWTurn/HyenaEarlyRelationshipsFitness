@@ -24,12 +24,13 @@ affil <- readRDS(derived[grepl('prep-affil', derived)])
 
 ## Set column names
 groupCol <- 'group'
-idCol <- 'randHyena'
+idCol <- 'ID'
 
 ## Iterations
-iterations <- 3
+iterations <- 2
 
-### Merge network data together ----
+
+### Count edges ----
 # Count the number of affiliations (edges) in each session
 affil[, countAffil := .N, session]
 
@@ -64,16 +65,18 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[1:3]
+life <- life[sample(.N, 5)]
+
+life[, ID := ego]
 
 # Randomization --------------------------------------------------
 randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 
 	if (iter == 0) {
-		asso[, randHyena := hyena]
+		asso[, ID := hyena]
 	} else {
 		# Randomize association IDs
-		asso[, randHyena := sample(hyena)]
+		asso[, ID := sample(hyena)]
 	}
 
 	## Count sessions ----------------------------------------------
@@ -84,10 +87,10 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 		ego <- sub$ego[[i]]
 		period <- sub$period[[i]]
 
-		uasso <- unique(sub[, .(randHyena, session)])
+		uasso <- unique(sub[, .(ID, session)])
 		uasso[, nSession := .N, session]
-		nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), randHyena]
-		return(nsesh[randHyena == ego])
+		nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), ID]
+		return(nsesh[ID == ego])
 	})
 
 
@@ -106,7 +109,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 
 	# Randomize affiliation data
 	randAffil <- randomizations.directed(
-		DT, id = 'randHyena', count = 'countAffil',
+		DT, id = 'ID', count = 'countAffil',
 		by = 'session', nms = nms
 	)
 
@@ -133,7 +136,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 
 	# Randomize aggression data
 	randAggr <- randomizations.directed(
-		DT, id = 'randHyena', count = 'countAggr',
+		DT, id = 'ID', count = 'countAggr',
 		by = 'session', nms = nms
 	)
 
@@ -216,8 +219,8 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			twi_degree = degree(assoG),
 			twi_strength = strength(assoG),
 			twi_betweenness = betweenness(assoG, directed = FALSE, weights = w),
-			assoID = names(degree(assoG))
-		)[assoID == ego]
+			ID = names(degree(assoG))
+		)[ID == ego]
 
 		w <- 1/E(affilG)$weight
 		affilMets <- data.table(
@@ -228,8 +231,8 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			affil_outstrength = strength(affilG, mode = 'out', weights = w),
 			affil_instrength = strength(affilG, mode = 'in', weights = w),
 			affil_betweenness = betweenness(affilG, directed = TRUE, weights = w),
-			affilID = names(degree(affilG))
-		)[affilID == ego]
+			ID = names(degree(affilG))
+		)[ID == ego]
 
 		w <- 1/E(aggrG)$weight
 		aggrMets <- data.table(
@@ -240,15 +243,26 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			aggr_outstrength = strength(aggrG, mode = 'out', weights = w),
 			aggr_instrength = strength(aggrG, mode = 'in', weights = w),
 			aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = w),
-			aggrID = names(degree(aggrG))
-		)[aggrID == ego]
+			ID = names(degree(aggrG))
+		)[ID == ego]
 
-		return(#cbind(nseshLs,
-								 cbind(assoMets, affilMets,
-								 			aggrMets, life[i], iteration = iter))#)
+
+		# If no rows, fill columns with NA
+		if (nrow(assoMets) == 0) {
+			assoMets <- assoMets[NA]
+		}
+
+		if (nrow(affilMets) == 0) {
+			affilMets <- affilMets[NA]
+		}
+
+		if (nrow(aggrMets) == 0) {
+			aggrMets <- aggrMets[NA]
+		}
+
+		cbind(assoMets, affilMets, aggrMets, life[i])
 	}
-
-	cbind(nseshLs, rbindlist(mets))
+	rbindlist(mets)[nseshLs, on = 'ID', all = TRUE][, iteration := iter]
 }
 
 out <- rbindlist(randMets)
