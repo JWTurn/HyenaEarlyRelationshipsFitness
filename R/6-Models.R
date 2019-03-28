@@ -10,12 +10,20 @@ lapply(libs, require, character.only = TRUE)
 
 ### Input data ----
 derived <- 'data/derived-data/'
-
 DT <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
+
+assocols <- colnames(DT)[grepl('twi', colnames(DT))]
+affilcols <- colnames(DT)[grepl('affil', colnames(DT))]
+aggrcols <- colnames(DT)[grepl('aggr', colnames(DT))]
 
 
 ### Histograms ----
-
+# pdf('graphics/association-histograms.pdf')
+lapply(assocols, function(col) {
+	ggplot(DT) +
+		geom_histogram(aes_string(col), binwidth = 1)
+})
+# dev.off()
 
 
 ### Models ----
