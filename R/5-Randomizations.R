@@ -67,9 +67,14 @@ doParallel::registerDoParallel()
 life <- life[1:3]
 
 # Randomization --------------------------------------------------
-randMets <- foreach(iter = seq(1, iterations)) %dopar% {
-	# Randomize association IDs
-	asso[, randHyena := sample(hyena)]
+randMets <- foreach(iter = seq(0, iterations)) %dopar% {
+
+	if (iter == 0) {
+		asso[, randHyena := hyena]
+	} else {
+		# Randomize association IDs
+		asso[, randHyena := sample(hyena)]
+	}
 
 	## Count sessions ----------------------------------------------
 	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life))) %do% {
