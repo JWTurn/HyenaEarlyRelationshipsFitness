@@ -8,7 +8,7 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-derived <- 'data/derived-data'
+derived <- 'data/derived-data/'
 der <- dir(derived, full.names = TRUE)
 
 # Life stages

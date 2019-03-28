@@ -4,7 +4,8 @@
 
 
 ### Packages ----
-libs <- c('lme4', 'data.table', 'ggplot2')
+# remotes::install_github('bbolker/broom.mixed')
+libs <- c('lme4', 'data.table', 'broom.mixed', 'ggplot2')
 lapply(libs, require, character.only = TRUE)
 
 
@@ -21,17 +22,18 @@ affilcols <- colnames(mets)[grepl('affil', colnames(mets))]
 aggrcols <- colnames(mets)[grepl('aggr', colnames(mets))]
 
 ### Merge ----
-egoCols <- c('ego', 'period', 'clan_size', 'ego_period_rank',
-						 'annual_rs', 'longevity_years')
-egos <- egos[, .SD, .SDcols = egoCols]
+# Fix inconsistent periods
+egos[, period := tolower(period)]
+egos[period == 'di', period := 'postgrad']
 
-setkeyv(egos, colnames(egoCols)[1:2])
-setkeyv(mets, colnames(egoCols)[1:2])
+# Merge
+cols <- c('ego', 'period')
+setkeyv(egos, cols)
+setkeyv(mets, cols)
 
 DT <- merge(mets, egos, all.x = TRUE)
 
 ### Models ----
-colnames(DT)
 DT[, {
 	m <- glmer(log(longevity_years) ~ ais_str_scl
 				+ agg_str_scl
