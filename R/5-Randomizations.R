@@ -82,7 +82,7 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		uasso <- unique(sub[, .(randHyena, session)])
 		uasso[, nSession := .N, session]
 		nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), randHyena]
-		return(cbind(nsesh[randHyena == ego], period))
+		return(nsesh[randHyena == ego])
 	})
 
 
@@ -238,10 +238,12 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 			aggrID = names(degree(aggrG))
 		)[aggrID == ego]
 
-		return(cbind(nseshLs, assoMets, affilMets, aggrMets,
-								 life[i], iteration = iter))
+		return(#cbind(nseshLs,
+								 cbind(assoMets, affilMets,
+								 			aggrMets, life[i], iteration = iter))#)
 	}
+
+	cbind(nseshLs, rbindlist(mets))
 }
 
-out <- rbindlist(do.call(c, randMets))
-View(out)
+out <- rbindlist(randMets)
