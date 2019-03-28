@@ -9,7 +9,11 @@ lapply(libs, require, character.only = TRUE)
 
 
 ### Input data ----
+raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
+
+egos <- fread(paste0(raw, 'egos_filtered.csv'))
+
 DT <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
 
 assocols <- colnames(DT)[grepl('twi', colnames(DT))]
