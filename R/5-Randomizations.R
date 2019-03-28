@@ -252,3 +252,9 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 }
 
 out <- rbindlist(randMets)
+
+out[iteration == 0, observed := TRUE]
+out[iteration != 0, observed := FALSE]
+
+### Output ----
+saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
