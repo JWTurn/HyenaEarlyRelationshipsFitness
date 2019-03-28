@@ -17,16 +17,12 @@ affilcols <- colnames(DT)[grepl('affil', colnames(DT))]
 aggrcols <- colnames(DT)[grepl('aggr', colnames(DT))]
 
 
-### Histograms ----
-# pdf('graphics/association-histograms.pdf')
-lapply(assocols, function(col) {
-	ggplot(DT) +
-		geom_histogram(aes_string(col), binwidth = 1)
-})
-# dev.off()
-
-
 ### Models ----
+DT[, ]
+
+
+
+
 ## best models for longevity CD
 l.cd.19 <- glmer(log(longevity_years) ~ ais_str_scl
 								 + agg_str_scl
