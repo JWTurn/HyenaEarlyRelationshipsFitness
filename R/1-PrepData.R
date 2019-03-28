@@ -3,8 +3,7 @@
 # Started: March 01 2019
 
 ### Packages ----
-libs <- c('data.table')
-lapply(libs, require, character.only = TRUE)
+library(data.table)
 
 ### Import data ----
 raw <- 'data/raw-data/'
