@@ -65,11 +65,11 @@ mets <- foreach(n = seq_along(twiLs)) %dopar% {
 	g <- graph.adjacency(twiLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
+	w <- (1/E(g)$weight)
 	cbind(data.table(
 		twi_degree = degree(g),
-		twi_strength = strength(g),
-		twi_betweenness = betweenness(g, directed = FALSE,
-															weights = (1/E(g)$weight)),
+		twi_strength = strength(g, weights = w),
+		twi_betweenness = betweenness(g, directed = FALSE, weights = w),
 		ID = names(degree(g))
 	), life[n])
 }
