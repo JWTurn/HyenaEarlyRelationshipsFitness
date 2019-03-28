@@ -143,6 +143,12 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 	}
 
 	## Combine edges, make graphs  -------------------------------------
+	# Associations
+	assoGraphs <- foreach(i = seq(1, nrow(life))) %dopar% {
+		graph.adjacency(twiLs[[i]], 'undirected',
+										diag = FALSE, weighted = TRUE)
+	}
+
 	# Affiliations
 	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
 		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
