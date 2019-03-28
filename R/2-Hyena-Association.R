@@ -30,10 +30,12 @@ nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
 	ego <- sub$ego[[i]]
+	period <- sub$period[[i]]
+
 	uasso <- unique(sub[, .(hyena, session)])
 	uasso[, nSession := .N, session]
 	nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), hyena]
-	return(nsesh[hyena == ego])
+	return(cbind(nsesh[hyena == ego], period))
 })
 
 ### Make networks for each ego*life stage ----
@@ -78,7 +80,7 @@ setnames(out, 'ID', idCol)
 
 out <- out[hyena == ego]
 
-out <- merge(out, nsesh)
+out <- merge(out, nsesh, by = c('hyena', 'period'))
 
 ### Output ----
 saveRDS(out, 'data/derived-data/association-metrics.Rds')
