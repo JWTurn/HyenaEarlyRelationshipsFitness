@@ -34,11 +34,13 @@ setkeyv(mets, cols)
 DT <- merge(mets, egos, all.x = TRUE)
 
 ### Models ----
+## best models for longevity CD
 DT[, {
 	m <- glmer(
-		log(longevity_years) ~ twi_strength +
-			aggr_strength +
-			affil_strength +
+		log(longevity_years) ~
+			scale(twi_strength) +
+			scale(aggr_strength) +
+			scale(affil_strength) +
 			ego_period_rank +
 			offset(log(clan_size)) +
 			offset(log(nSession)) +
@@ -50,7 +52,6 @@ DT[, {
 }, by = iteration]
 
 
-## best models for longevity CD
 l.cd.19 <- glmer(log(longevity_years) ~ ais_str_scl
 								 + agg_str_scl
 								 + ll_str_scl
