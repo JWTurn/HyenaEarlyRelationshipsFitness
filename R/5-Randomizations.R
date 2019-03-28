@@ -183,38 +183,50 @@ randMets <- foreach(iter = seq(1, iterations)) %dopar% {
 		return(g)
 	}
 
-	## Generate graphs, return net metrics --------------------------
+	## Return network metrics ---------------------------------
 	mets <- foreach(i = seq(1, nrow(life))) %do% {
 		affilG <- affilGraphs[[i]]
 		aggrG <- aggrGraphs[[i]]
+		assoG <- assoGraphs[[i]]
 
+		ego <- life$ego[[i]]
+
+		w <- 1/E(assoG)$weight
+		assoMets <- data.table(
+			twi_degree = degree(assoG),
+			twi_strength = strength(assoG),
+			twi_betweenness = betweenness(assoG, directed = FALSE, weights = w),
+			assoID = names(degree(assoG))
+		)[assoID == ego]
+
+		w <- 1/E(affilG)$weight
 		affilMets <- data.table(
 			affil_degree = degree(affilG, mode = 'total'),
 			affil_outdegree = degree(affilG, mode = 'out'),
 			affil_indegree = degree(affilG, mode = 'in'),
-			affil_strength = strength(affilG, mode = 'total'),
-			affil_outstrength = strength(affilG, mode = 'out'),
-			affil_instrength = strength(affilG, mode = 'in'),
-			affil_betweenness = betweenness(affilG, directed = TRUE,
-																			weights = 1/E(affilG)$weight),
-			ID = names(degree(affilG))
-		)
+			affil_strength = strength(affilG, mode = 'total' ,weights = w),
+			affil_outstrength = strength(affilG, mode = 'out', weights = w),
+			affil_instrength = strength(affilG, mode = 'in', weights = w),
+			affil_betweenness = betweenness(affilG, directed = TRUE, weights = w),
+			affilID = names(degree(affilG))
+		)[affilID == ego]
 
+		w <- 1/E(aggrG)$weight
 		aggrMets <- data.table(
 			aggr_degree = degree(aggrG, mode = 'total'),
 			aggr_outdegree = degree(aggrG, mode = 'out'),
 			aggr_indegree = degree(aggrG, mode = 'in'),
-			aggr_strength = strength(aggrG, mode = 'total'),
-			aggr_outstrength = strength(aggrG, mode = 'out'),
-			aggr_instrength = strength(aggrG, mode = 'in'),
-			aggr_betweenness = betweenness(aggrG, directed = TRUE,
-																		 weights = 1/E(aggrG)$weight),
-			ID = names(degree(aggrG))
-		)
+			aggr_strength = strength(aggrG, mode = 'total', weights = w),
+			aggr_outstrength = strength(aggrG, mode = 'out', weights = w),
+			aggr_instrength = strength(aggrG, mode = 'in', weights = w),
+			aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = w),
+			aggrID = names(degree(aggrG))
+		)[aggrID == ego]
 
-		return(cbind(affilMets, aggrMets, life[i], iteration = iter)[ID == ego])
+		return(cbind(assoMets, affilMets, aggrMets,
+								 life[i], iteration = iter))
 	}
 }
 
 out <- rbindlist(do.call(c, randMets))
-out
+View(out)
