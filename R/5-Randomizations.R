@@ -8,19 +8,20 @@ libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
-derived <- dir('data/derived-data', full.names = TRUE)
+derived <- 'data/derived-data'
+der <- dir(derived, full.names = TRUE)
 
 # Life stages
-life <- readRDS(derived[grepl('ego-life', derived)])
+life <- readRDS(der[grepl('ego-life', der)])
 
 # Association
-asso <- readRDS(derived[grepl('prep-asso', derived)])
+asso <- readRDS(der[grepl('prep-asso', der)])
 
 # Aggression
-aggr <- readRDS(derived[grepl('prep-aggr', derived)])
+aggr <- readRDS(der[grepl('prep-aggr', der)])
 
 # Affiliation
-affil <- readRDS(derived[grepl('prep-affil', derived)])
+affil <- readRDS(der[grepl('prep-affil', der)])
 
 ## Set column names
 groupCol <- 'group'
@@ -260,7 +261,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			aggrMets <- aggrMets[NA]
 		}
 
-		cbind(assoMets, affilMets, aggrMets, life[i])
+		cbind(life[i], assoMets, affilMets, aggrMets)
 	}
 	rbindlist(mets)[nseshLs, on = 'ID', all = TRUE][, iteration := iter]
 }
