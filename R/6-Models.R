@@ -14,17 +14,34 @@ derived <- 'data/derived-data/'
 
 egos <- fread(paste0(raw, 'egos_filtered.csv'))
 
-DT <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
+mets <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
 
-assocols <- colnames(DT)[grepl('twi', colnames(DT))]
-affilcols <- colnames(DT)[grepl('affil', colnames(DT))]
-aggrcols <- colnames(DT)[grepl('aggr', colnames(DT))]
+assocols <- colnames(mets)[grepl('twi', colnames(mets))]
+affilcols <- colnames(mets)[grepl('affil', colnames(mets))]
+aggrcols <- colnames(mets)[grepl('aggr', colnames(mets))]
 
+### Merge ----
+egoCols <- c('ego', 'period', 'clan_size', 'ego_period_rank',
+						 'annual_rs', 'longevity_years')
+egos <- egos[, .SD, .SDcols = egoCols]
+
+setkeyv(egos, colnames(egoCols)[1:2])
+setkeyv(mets, colnames(egoCols)[1:2])
+
+DT <- merge(mets, egos, all.x = TRUE)
 
 ### Models ----
-DT[, ]
+colnames(DT)
+DT[, {
+	m <- glmer(log(longevity_years) ~ ais_str_scl
+				+ agg_str_scl
+				+ ll_str_scl
+				+ ego_period_rank + offset(log(clan_size)) + offset(log(sessions_count)) + (1|mom),
+				data=.SD, family = 'gaussian')
+	tidy(m)
+}, by = iteration]
 
-
+From the models, I would need to estimate and z score for each parameter
 
 
 ## best models for longevity CD
