@@ -66,7 +66,7 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[sample(.N, 30)]
+life <- life[ego == 'alfe' & period == 'adult']
 
 life[, ID := ego]
 
