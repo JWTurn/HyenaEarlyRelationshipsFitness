@@ -70,6 +70,11 @@ life <- life[ego == 'alfe' & period == 'adult']
 
 life[, ID := ego]
 
+# Include an affil and aggression index to resolve the dup rows in merge with association
+affil[, affilIndex := .I]
+aggr[, aggrIndex := .I]
+
+
 # Randomization --------------------------------------------------
 randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 
