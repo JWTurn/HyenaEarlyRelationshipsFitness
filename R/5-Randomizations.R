@@ -109,11 +109,16 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 	# Set output names of left and right randomized IDs
 	nms <- c('ll_receiver', 'll_solicitor')
 
-	# Randomize affiliation data
-	randAffil <- randomizations.directed(
-		DT, id = 'ID', count = 'countAffil',
-		by = 'session', nms = nms
-	)
+	if (iter == 0) {
+		randAffil <- DT
+	} else {
+		# Randomize affiliation data
+		randAffil <- randomizations.directed(
+			DT, id = 'ID', count = 'countAffil',
+			by = 'session', nms = nms
+		)
+	}
+
 
 	# Count matching edges
 	countLs <- foreach(i = seq(1, nrow(life))) %do% {
@@ -136,11 +141,15 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 	# Set output names of left and right randomized IDs
 	nms <- c('aggressor', 'recip')
 
-	# Randomize aggression data
-	randAggr <- randomizations.directed(
-		DT, id = 'ID', count = 'countAggr',
-		by = 'session', nms = nms
-	)
+	if (iter == 0) {
+		randAggr <- DT
+	} else {
+		# Randomize aggression data
+		randAggr <- randomizations.directed(
+			DT, id = 'ID', count = 'countAggr',
+			by = 'session', nms = nms
+		)
+	}
 
 	#  average of behavior1 during period
 	avgLs <- foreach(i = seq(1, nrow(life))) %do% {
