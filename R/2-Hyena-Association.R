@@ -38,7 +38,7 @@ nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
 })
 
 ### Make networks for each ego*life stage ----
-life <- life[1:5]
+#life <- life[1:5]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
@@ -65,11 +65,11 @@ mets <- foreach(n = seq_along(twiLs)) %dopar% {
 	g <- graph.adjacency(twiLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
-	w <- (1/E(g)$weight)
+	w <- E(g)$weight
 	cbind(data.table(
 		twi_degree = degree(g),
 		twi_strength = strength(g, weights = w),
-		twi_betweenness = betweenness(g, directed = FALSE, weights = w),
+		twi_betweenness = betweenness(g, directed = FALSE, weights = 1/w),
 		ID = names(degree(g))
 	), life[n])
 }

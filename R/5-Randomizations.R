@@ -216,15 +216,15 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 
 		ego <- life$ego[[i]]
 
-		w <- 1/E(assoG)$weight
+		w <- E(assoG)$weight
 		assoMets <- data.table(
 			twi_degree = degree(assoG),
 			twi_strength = strength(assoG),
-			twi_betweenness = betweenness(assoG, directed = FALSE, weights = w),
+			twi_betweenness = betweenness(assoG, directed = FALSE, weights = 1/w),
 			ID = names(degree(assoG))
 		)[ID == ego]
 
-		w <- 1/E(affilG)$weight
+		w <- E(affilG)$weight
 		affilMets <- data.table(
 			affil_degree = degree(affilG, mode = 'total'),
 			affil_outdegree = degree(affilG, mode = 'out'),
@@ -232,11 +232,11 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			affil_strength = strength(affilG, mode = 'total' ,weights = w),
 			affil_outstrength = strength(affilG, mode = 'out', weights = w),
 			affil_instrength = strength(affilG, mode = 'in', weights = w),
-			affil_betweenness = betweenness(affilG, directed = TRUE, weights = w),
+			affil_betweenness = betweenness(affilG, directed = TRUE, weights = 1/w),
 			ID = names(degree(affilG))
 		)[ID == ego]
 
-		w <- 1/E(aggrG)$weight
+		w <- E(aggrG)$weight
 		aggrMets <- data.table(
 			aggr_degree = degree(aggrG, mode = 'total'),
 			aggr_outdegree = degree(aggrG, mode = 'out'),
@@ -244,7 +244,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 			aggr_strength = strength(aggrG, mode = 'total', weights = w),
 			aggr_outstrength = strength(aggrG, mode = 'out', weights = w),
 			aggr_instrength = strength(aggrG, mode = 'in', weights = w),
-			aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = w),
+			aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = 1/w),
 			ID = names(degree(aggrG))
 		)[ID == ego]
 
