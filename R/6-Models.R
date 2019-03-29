@@ -34,8 +34,8 @@ setkeyv(mets, cols)
 DT <- merge(mets, egos, all.x = TRUE)
 
 ### Models ----
-## best models for longevity CD
-DT[, {
+# best models for longevity CD
+DT[period == 'cd', {
 	m <- glmer(
 		log(longevity_years) ~
 			scale(twi_strength) +
