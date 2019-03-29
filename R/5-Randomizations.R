@@ -198,8 +198,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 		sub <-
 			merge(countLs[[i]], twiDT, by.x = c('ll_receiver', 'll_solicitor'),
-						by.y = c('Var1', 'Var2'), all.x = TRUE)
-		sub[value == 0, value := NA]
+						by.y = c('Var1', 'Var2'), all.x = TRUE)[value != 0]
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 															 directed = TRUE)
 		w <- sub[, N / value]
@@ -212,8 +211,8 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
 		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 		sub <- merge(avgLs[[i]], twiDT, by.x = c('aggressor', 'recip'),
-								 by.y = c('Var1', 'Var2'), all.x = TRUE)
-		sub[value == 0 | (value / avgB1) == 0, value := NA]
+								 by.y = c('Var1', 'Var2'), all.x = TRUE)[
+								 	value != 0 & (value / avgB1) != 0]
 
 		g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 															 directed = TRUE)
