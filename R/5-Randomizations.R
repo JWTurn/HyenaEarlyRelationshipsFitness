@@ -124,12 +124,15 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 		)
 	}
 
-
 	# Count matching edges
 	countLs <- foreach(i = seq(1, nrow(life))) %do% {
 		focal <- randAffil[life[i],
 									 on = .(sessiondate >= period_start,
 									 			 sessiondate < period_end)]
+		focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
+
+		focal <- unique(focal[, .(ll_receiver, ll_solicitor, affilIndex)])
+
 		focal[, .N, .(ll_receiver, ll_solicitor)]
 	}
 
