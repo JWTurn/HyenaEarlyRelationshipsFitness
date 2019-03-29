@@ -164,6 +164,7 @@ randMets <- foreach(iter = seq(0, iterations)) %dopar% {
 		focal <- randAggr[life[i],
 									on = .(sessiondate >= period_start,
 												 sessiondate < period_end)]
+		focal <- unique(focal[, .(aggressor, recip, behavior1, aggrIndex)])
 		focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
 	}
 
