@@ -66,13 +66,15 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-life <- life[ego == 'alfe' & period == 'adult']
-
+# For merge in foreach
 life[, ID := ego]
 
 # Include an affil and aggression index to resolve the dup rows in merge with association
 affil[, affilIndex := .I]
 aggr[, aggrIndex := .I]
+
+# In case of error
+options(error = recover)
 
 
 # Randomization --------------------------------------------------
