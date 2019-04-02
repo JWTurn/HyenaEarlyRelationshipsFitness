@@ -74,11 +74,11 @@ affil[, affilIndex := .I]
 aggr[, aggrIndex := .I]
 
 # In case of error
-options(error = recover)
+# options(error = recover)
 
 
 # Randomization --------------------------------------------------
-randMets <- foreach(iter = seq(0, iterations)) %dopar% {
+randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {
 
 	if (iter == 0) {
 		asso[, ID := hyena]
