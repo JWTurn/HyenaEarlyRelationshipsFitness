@@ -51,6 +51,11 @@ DT.lcd.7 <- DT[period == 'cd', {
 	tidy(m)
 }, by = iteration]
 
+setkeyv(DT.lcd.7, c('iteration', 'term'))
+DT.lcd.7.obs <- DT.lcd.7[iteration == 0]
+DT.lcd.7.rand <- DT.lcd.7[iteration != 0]
+DT.lcd.7.p <- DT.lcd.7[, sum(estimate > estimate if iteration == 0), .(term)]
+
 l.cd.7 <- glmer(log(longevity_years) ~  ais_deg_scl
 								+ agg_outdeg_scl + agg_indeg_scl
 								+ ll_outdeg_scl + ll_indeg_scl
