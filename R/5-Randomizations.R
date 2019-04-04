@@ -28,7 +28,8 @@ groupCol <- 'group'
 idCol <- 'ID'
 
 ## Iterations
-iterations <- 2
+set.seed(37)
+iterations <- 250
 
 
 ### Count edges ----
@@ -66,7 +67,7 @@ source('R/twi.R')
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
-# For merge in foreach
+
 life[, ID := ego]
 
 # Include an affil and aggression index to resolve the dup rows in merge with association
@@ -78,7 +79,8 @@ aggr[, aggrIndex := .I]
 
 
 # Randomization --------------------------------------------------
-randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {
+#randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {      # this starts at observed
+randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% {       # this starts at first iteration
 
 	if (iter == 0) {
 		asso[, ID := hyena]
@@ -285,10 +287,12 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% 
 	rbindlist(mets)[nseshLs, on = c('ID', 'period'), all = TRUE][, iteration := iter]
 }
 
-out <- rbindlist(randMets)
+out <- rbindlist(randMets[unlist(lapply(randMets, function(x) !is.null(ncol(x))))])
 
-out[iteration == 0, observed := TRUE]
+#out[iteration == 0, observed := TRUE]
 out[iteration != 0, observed := FALSE]
 
 ### Output ----
-saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
+saveRDS(out, paste0(derived, 'observed-random-metrics_c.Rds'))
+
+out[, uniqueN(iterations)]
