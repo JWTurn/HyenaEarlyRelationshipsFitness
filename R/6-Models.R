@@ -15,7 +15,18 @@ derived <- 'data/derived-data/'
 
 egos <- fread(paste0(raw, 'egos_filtered.csv'))
 
-mets <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
+mets_a <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
+mets_b <- readRDS(paste0(derived, 'observed-random-metrics_b.Rds'))
+mets_c <- readRDS(paste0(derived, 'observed-random-metrics_c.Rds'))
+mets_d <- readRDS(paste0(derived, 'observed-random-metrics_d.Rds'))
+
+mets_b$iteration <- mets_b$iteration + 250
+mets_c$iteration <- mets_c$iteration + 500
+mets_d$iteration <- mets_d$iteration + 750
+
+mets <- rbind(mets_a, mets_b, mets_c)
+
+mets[, uniqueN(iteration)]
 
 assocols <- colnames(mets)[grepl('twi', colnames(mets))]
 affilcols <- colnames(mets)[grepl('affil', colnames(mets))]
@@ -60,7 +71,11 @@ DT.lcd.7.p <-
 		suffixes = c('', '.obs')
 	)
 
-DT.lcd.7.p[, sum(estimate < estimate.obs), term]
+DT.lcd.7.pless <- DT.lcd.7.p[, sum(estimate < estimate.obs), term]
+DT.lcd.7.pless[,'pless'] <- DT.lcd.7.pless$V1/630
+DT.lcd.7.pmore <- DT.lcd.7.p[, sum(estimate > estimate.obs), term]
+DT.lcd.7.pmore[,'pmore'] <- DT.lcd.7.pmore$V1/630
+
 
 ##
 l.cd.7 <- glmer(log(longevity_years) ~  ais_deg_scl
