@@ -291,8 +291,9 @@ out <- rbindlist(randMets[unlist(lapply(randMets, function(x) !is.null(ncol(x)))
 
 #out[iteration == 0, observed := TRUE]
 out[iteration != 0, observed := FALSE]
+#out <- out[iteration != 0]
 
 ### Output ----
-saveRDS(out, paste0(derived, 'observed-random-metrics_c.Rds'))
+saveRDS(out, paste0(derived, 'observed-random-metrics_b.Rds'))
 
-out[, uniqueN(iterations)]
+out[, uniqueN(iteration)]
