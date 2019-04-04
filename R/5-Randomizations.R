@@ -282,6 +282,7 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 			aggrMets <- aggrMets[NA]
 		}
 
+		# TODO: alternative to cbind that handles that NA better
 		cbind(life[i], assoMets, affilMets, aggrMets)
 	}
 	rbindlist(mets)[nseshLs, on = c('ID', 'period'), all = TRUE][, iteration := iter]
