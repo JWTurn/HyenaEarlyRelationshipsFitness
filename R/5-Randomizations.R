@@ -28,8 +28,8 @@ groupCol <- 'group'
 idCol <- 'ID'
 
 ## Iterations
-set.seed(37)
-iterations <- 250
+set.seed(13)
+iterations <- 45
 
 
 ### Count edges ----
@@ -295,6 +295,6 @@ out[iteration != 0, observed := FALSE]
 #out <- out[iteration != 0]
 
 ### Output ----
-saveRDS(out, paste0(derived, 'observed-random-metrics_b.Rds'))
+saveRDS(out, paste0(derived, 'observed-random-metrics_e.Rds'))
 
 out[, uniqueN(iteration)]
