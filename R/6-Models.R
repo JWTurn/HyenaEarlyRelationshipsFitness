@@ -58,7 +58,8 @@ DT[,'alone'] <- DT$nAlone/DT$nSession
 DT.obs <- DT[iteration == 0]
 
 ### Models ----
-# best models for longevity CD
+#### best models for longevity CD ####
+# all and directed only
 DT.lcd.7 <- DT[period == 'cd', {
 	m <- glmer(
 		log(longevity_years) ~
@@ -113,7 +114,7 @@ DT.lcd.7.ci.tab<-as.data.frame(DT.lcd.7.ci)
 # DT.lcd7.results <- merge(DT.lcd.7.pboth, DT.lcd.7.ci, by=)
 
 
-
+# all
 DT.lcd.19 <- DT[period == 'cd', {
 	m <- glmer(
 		log(longevity_years) ~
@@ -164,6 +165,8 @@ DT.lcd.19.ci <- confint(DT.lcd.19.obs, method = 'profile')
 DT.lcd.19.ci.tab <- as.data.frame(DT.lcd.19.ci)
 
 
+
+# all and directed only
 
 DT.lcd.2 <- DT[period == 'cd', {
 	m <- glmer(
@@ -220,7 +223,8 @@ DT.lcd.2.ci.tab<- as.data.frame(DT.lcd.2.ci)
 
 
 
-## best model for longevity DI
+#### best model for longevity DI ####
+# all
 DT.lpg.18 <- DT[period == 'postgrad', {
 	m <- glmer(
 		log(longevity_years) ~
@@ -276,10 +280,62 @@ DT.lpg.18.ci <- confint(DT.lpg.18.obs, method = 'profile')
 DT.lpg.18.ci.tab <- as.data.frame(DT.lpg.18.ci)
 
 
+# all and directed only
+DT.lpg.7 <- DT[period == 'postgrad', {
+	m <- glmer(
+		log(longevity_years) ~
+			ego_period_rank +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.lpg.7.p <-
+	merge(
+		DT.lpg.7[iteration != 0],
+		DT.lpg.7[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.lpg.7.pless <- DT.lpg.7.p[, sum(estimate < estimate.obs), term]
+# DT.lpg.7.pless[,'pless'] <- DT.lpg.7.pless$V1/1000
+# DT.lpg.7.pmore <- DT.lpg.7.p[, sum(estimate > estimate.obs), term]
+# DT.lpg.7.pmore[,'pmore'] <- DT.lpg.7.pmore$V1/1000
+
+
+DT.lpg.7.pboth <- DT.lpg.7.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.lpg.7.obs <- glmer(log(longevity_years) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'postgrad'),
+											family = 'gaussian')
+DT.lpg.7.ci <- confint(DT.lpg.7.obs, method = 'profile')
+DT.lpg.7.ci.tab<-as.data.frame(DT.lpg.7.ci)
 
 
 
-## best model for longevity Adult
+
+#### best model for longevity Adult ####
+# all
 DT.lad.18 <- DT[period == 'adult', {
 	m <- glmer(
 		log(longevity_years) ~
@@ -333,8 +389,60 @@ DT.lad.18.ci <- confint(DT.lad.18.obs, method = 'profile')
 DT.lad.18.ci.tab <- as.data.frame(DT.lad.18.ci)
 
 
+# all and directed only
+DT.lad.7 <- DT[period == 'adult', {
+	m <- glmer(
+		log(longevity_years) ~
+			ego_period_rank +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
 
-## best models for ARS CD
+
+DT.lad.7.p <-
+	merge(
+		DT.lad.7[iteration != 0],
+		DT.lad.7[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.lad.7.pless <- DT.lad.7.p[, sum(estimate < estimate.obs), term]
+# DT.lad.7.pless[,'pless'] <- DT.lad.7.pless$V1/1000
+# DT.lad.7.pmore <- DT.lad.7.p[, sum(estimate > estimate.obs), term]
+# DT.lad.7.pmore[,'pmore'] <- DT.lad.7.pmore$V1/1000
+
+
+DT.lad.7.pboth <- DT.lad.7.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.lad.7.obs <- glmer(log(longevity_years) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'adult'),
+											family = 'gaussian')
+DT.lad.7.ci <- confint(DT.lad.7.obs, method = 'profile')
+DT.lad.7.ci.tab<-as.data.frame(DT.lad.7.ci)
+
+
+#### best models for ARS CD ####
+# all
 DT.acd.18 <- DT[period == 'cd', {
 	m <- glmer(
 		log(annual_rs) ~
@@ -389,7 +497,7 @@ DT.acd.18.ci <- confint(DT.acd.18.obs, method = 'profile')
 DT.acd.18.ci.tab <- as.data.frame(DT.acd.18.ci)
 
 
-
+# all
 # dAIC = 0.5
 DT.acd.11 <- DT[period == 'cd', {
 	m <- glmer(
@@ -445,7 +553,119 @@ DT.acd.11.ci <- confint(DT.acd.11.obs, method = 'profile')
 DT.acd.11.ci.tab <- as.data.frame(DT.acd.11.ci)
 
 
-## best models for ARS DI
+
+# directed only
+DT.acd.7 <- DT[period == 'cd', {
+	m <- glmer(
+		log(annual_rs) ~
+			ego_period_rank +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.acd.7.p <-
+	merge(
+		DT.acd.7[iteration != 0],
+		DT.acd.7[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.acd.7.pless <- DT.acd.7.p[, sum(estimate < estimate.obs), term]
+# DT.acd.7.pless[,'pless'] <- DT.acd.7.pless$V1/1000
+# DT.acd.7.pmore <- DT.acd.7.p[, sum(estimate > estimate.obs), term]
+# DT.acd.7.pmore[,'pmore'] <- DT.acd.7.pmore$V1/1000
+
+
+DT.acd.7.pboth <- DT.acd.7.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.acd.7.obs <- glmer(log(annual_rs) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'cd'),
+											family = 'gaussian')
+DT.acd.7.ci <- confint(DT.acd.7.obs, method = 'profile')
+DT.acd.7.ci.tab<-as.data.frame(DT.acd.7.ci)
+
+
+# directed only
+DT.acd.2 <- DT[period == 'cd', {
+	m <- glmer(
+		log(annual_rs) ~
+			ego_period_rank +
+			scale(alone) +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.acd.2.p <-
+	merge(
+		DT.acd.2[iteration != 0],
+		DT.acd.2[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.acd.2.pless <- DT.acd.2.p[, sum(estimate < estimate.obs), term]
+# DT.acd.2.pless[,'pless'] <- DT.acd.2.pless$V1/1000
+# DT.acd.2.pmore <- DT.acd.2.p[, sum(estimate > estimate.obs), term]
+# DT.acd.2.pmore[,'pmore'] <- DT.acd.2.pmore$V1/1000
+
+
+DT.acd.2.pboth <- DT.acd.2.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.acd.2.obs <- glmer(log(annual_rs) ~
+												ego_period_rank +
+												scale(alone) +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'cd'),
+											family = 'gaussian')
+DT.acd.2.ci <- confint(DT.acd.2.obs, method = 'profile')
+DT.acd.2.ci.tab<-as.data.frame(DT.acd.2.ci)
+
+
+
+
+
+#### best models for ARS DI ####
+#all
+
 DT.apg.18 <- DT[period == 'postgrad', {
 	m <- glmer(
 		log(annual_rs) ~
@@ -499,6 +719,7 @@ DT.apg.18.ci <- confint(DT.apg.18.obs, method = 'profile')
 DT.apg.18.ci.tab <- as.data.frame(DT.apg.18.ci)
 
 
+#all
 
 DT.apg.19 <- DT[period == 'postgrad', {
 	m <- glmer(
@@ -554,8 +775,123 @@ DT.apg.19.ci.tab <- as.data.frame(DT.apg.19.ci)
 
 
 
+# directed only
 
-## best models for ARS Adult
+DT.apg.19.a <- DT[period == 'postgrad', {
+	m <- glmer(
+		log(annual_rs) ~
+			ego_period_rank +
+			scale(twi_strength) +
+			scale(aggr_outstrength) +
+			scale(aggr_instrength) +
+			scale(affil_outstrength) +
+			scale(affil_instrength) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+
+DT.apg.19.a.p <-
+	merge(
+		DT.apg.19.a[iteration != 0],
+		DT.apg.19.a[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.apg.19.a.pless <- DT.apg.19.a.p[, sum(estimate < estimate.obs), term]
+# DT.apg.19.a.pless[,'pless'] <- DT.apg.19.a.pless$V1/1000
+# DT.apg.19.a.pmore <- DT.apg.19.a.p[, sum(estimate > estimate.obs), term]
+# DT.apg.19.a.pmore[,'pmore'] <- DT.apg.19.a.pmore$V1/1000
+
+DT.apg.19.a.pboth <- DT.apg.19.a.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																	 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																	 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+															 term]
+
+
+
+DT.apg.19.a.obs <- glmer(log(annual_rs) ~
+												 	ego_period_rank +
+												 	scale(twi_strength) +
+												 	scale(aggr_outstrength) +
+												 	scale(aggr_instrength) +
+												 	scale(affil_outstrength) +
+												 	scale(affil_instrength) +
+												 	offset(log(clan_size)) +
+												 	offset(log(nSession)) +
+											 	(1 | mom),
+											 data = na.omit(DT.obs[period == 'cd'], cols = 'annual_rs'),
+											 family = 'gaussian')
+DT.apg.19.a.ci <- confint(DT.apg.19.a.obs, method = 'profile')
+
+DT.apg.19.a.ci.tab <- as.data.frame(DT.apg.19.a.ci)
+
+
+
+
+# directed only
+DT.apg.7 <- DT[period == 'postgrad', {
+	m <- glmer(
+		log(annual_rs) ~
+			ego_period_rank +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.apg.7.p <-
+	merge(
+		DT.apg.7[iteration != 0],
+		DT.apg.7[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.apg.7.pless <- DT.apg.7.p[, sum(estimate < estimate.obs), term]
+# DT.apg.7.pless[,'pless'] <- DT.apg.7.pless$V1/1000
+# DT.apg.7.pmore <- DT.apg.7.p[, sum(estimate > estimate.obs), term]
+# DT.apg.7.pmore[,'pmore'] <- DT.apg.7.pmore$V1/1000
+
+
+DT.apg.7.pboth <- DT.apg.7.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.apg.7.obs <- glmer(log(annual_rs) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'postgrad'),
+											family = 'gaussian')
+DT.apg.7.ci <- confint(DT.apg.7.obs, method = 'profile')
+DT.apg.7.ci.tab<-as.data.frame(DT.apg.7.ci)
+
+
+
+
+
+#### best models for ARS Adult ####
 DT.aad.18 <- DT[period == 'adult', {
 	m <- glmer(
 		log(annual_rs) ~
@@ -609,8 +945,125 @@ DT.aad.18.ci.tab <- as.data.frame(DT.aad.18.ci)
 
 
 
+# directed only
+DT.aad.7 <- DT[period == 'adult', {
+	m <- glmer(
+		log(annual_rs) ~
+			ego_period_rank +
+			scale(twi_degree) +
+			scale(aggr_outdegree) + scale(aggr_indegree) +
+			scale(affil_outdegree) + scale(affil_indegree) +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.aad.7.p <-
+	merge(
+		DT.aad.7[iteration != 0],
+		DT.aad.7[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.aad.7.pless <- DT.aad.7.p[, sum(estimate < estimate.obs), term]
+# DT.aad.7.pless[,'pless'] <- DT.aad.7.pless$V1/1000
+# DT.aad.7.pmore <- DT.aad.7.p[, sum(estimate > estimate.obs), term]
+# DT.aad.7.pmore[,'pmore'] <- DT.aad.7.pmore$V1/1000
+
+
+DT.aad.7.pboth <- DT.aad.7.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+DT.aad.7.obs <- glmer(log(annual_rs) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'adult'),
+											family = 'gaussian')
+
+DT.aad.7.obs <- glmer(log(annual_rs) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)) +
+												(1 | mom),
+											data = subset(DT, period == 'adult'),
+											family = 'gaussian')
+DT.aad.7.ci <- confint(DT.aad.7.obs, method = 'profile')
+DT.aad.7.ci.tab<-as.data.frame(DT.aad.7.ci)
+
+
 
 #### PLOTS ####
+DT.lcd.7.g <- DT.lcd.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.lcd.7.g.obs <- DT.lcd.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.lcd.7.g)
+points(1:length(DT.lcd.7.g.obs$term), DT.lcd.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+DT.lcd.2.g <- DT.lcd.2.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.lcd.2.g.obs <- DT.lcd.2.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.lcd.2.g)
+points(1:length(DT.lcd.2.g.obs$term), DT.lcd.2.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+
+DT.lpg.7.g <- DT.lpg.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.lpg.7.g.obs <- DT.lpg.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.lpg.7.g)
+points(1:length(DT.lpg.7.g.obs$term), DT.lpg.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+
+DT.lad.7.g <- DT.lad.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.lad.7.g.obs <- DT.lad.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.lad.7.g)
+points(1:length(DT.lad.7.g.obs$term), DT.lad.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+
+
+
+DT.acd.7.g <- DT.acd.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.acd.7.g.obs <- DT.acd.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.acd.7.g)
+points(1:length(DT.acd.7.g.obs$term), DT.acd.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+DT.acd.2.g <- DT.acd.2.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.acd.2.g.obs <- DT.acd.2.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.acd.2.g)
+points(1:length(DT.acd.2.g.obs$term), DT.acd.2.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+DT.apg.19.a.g <- DT.apg.19.a.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.apg.19.a.g.obs <- DT.apg.19.a.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.apg.19.a.g)
+points(1:length(DT.apg.19.a.g.obs$term), DT.apg.19.a.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+DT.apg.7.g <- DT.apg.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.apg.7.g.obs <- DT.apg.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.apg.7.g)
+points(1:length(DT.apg.7.g.obs$term), DT.apg.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+DT.aad.7.g <- DT.aad.7.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
+DT.aad.7.g.obs <- DT.aad.7.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
+boxplot(estimate~term, data = DT.aad.7.g)
+points(1:length(DT.aad.7.g.obs$term), DT.aad.7.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
+
+
+
+
+
 DT.acd.18.g <- DT.acd.18.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
 DT.acd.18.g.obs <- DT.acd.18.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
 boxplot(estimate~term, data = DT.acd.18.g)
@@ -629,11 +1082,13 @@ boxplot(estimate~term, data = DT.apg.18.g)
 points(1:length(DT.apg.18.g.obs$term), DT.apg.18.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
 
 
-DT.apg.19.g <- DT.apg.19.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
-DT.apg.19.g.obs <- DT.apg.19.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
-boxplot(estimate~term, data = DT.apg.19.g)
-points(1:length(DT.apg.19.g.obs$term), DT.apg.19.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
 
+DT.obs.pg.ars<-DT.obs[period=='postgrad' & annual_rs<2.5]
+plot(DT.obs.pg.ars$twi_strength, DT.obs.pg.ars$annual_rs)
+abline(lm(annual_rs~twi_strength, DT.obs.pg.ars))
+
+plot(DT.obs.pg.ars$aggr_outdegree, DT.obs.pg.ars$annual_rs)
+abline(lm(annual_rs~aggr_outdegree, DT.obs.pg.ars))
 
 DT.aad.18.g <- DT.aad.18.p[(term != '(Intercept)' & term !=  'sd__Observation' & term !=  'sd__(Intercept)')]
 DT.aad.18.g.obs <- DT.aad.18.g[,.(term = unique(term), estimate.obs = unique(estimate.obs))]
@@ -641,3 +1096,9 @@ boxplot(estimate~term, data = DT.aad.18.g)
 points(1:length(DT.aad.18.g.obs$term), DT.aad.18.g.obs$estimate.obs, pch = 18, col = "blue", cex = 3)
 
 
+
+
+
+DT.obs.cd.long<-DT.obs[period=='cd']
+plot(DT.obs.cd.long$affil_outdegree, DT.obs.cd.long$longevity_years)
+abline(lm(longevity_years~affil_outdegree, DT.obs.cd.long))
