@@ -55,6 +55,16 @@ DT[,'alone'] <- DT$nAlone/DT$nSession
 
 #saveRDS(DT, paste0(derived, 'DT_obs_rands.Rds'))
 
+#### data for publishing ####
+DT.pub <- DT[,.(ego, period, ego_period_rank, clan_size, mom, nSession,
+								alone, twi_degree, twi_strength, twi_betweenness,
+								aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+								affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness,
+								annual_rs, longevity_years, iteration, observed)]
+DT.pub[period == 'postgrad', period := 'di']
+
+write.csv(DT.pub, file = paste0(derived, 'SNfitnessData_2019-04-29.csv'))
+
 DT.obs <- DT[iteration == 0]
 
 ### Models ----
