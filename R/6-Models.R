@@ -121,7 +121,46 @@ DT.lcd.7.ci <- confint(DT.lcd.7.obs, method = 'profile')
 DT.lcd.7.ci.tab<-as.data.frame(DT.lcd.7.ci)
 
 
-# DT.lcd7.results <- merge(DT.lcd.7.pboth, DT.lcd.7.ci, by=)
+
+
+DT.lcd.7.us <- DT[period == 'cd', {
+	m <- glmer(
+		log(longevity_years) ~
+			ego_period_rank +
+			twi_degree +
+			aggr_outdegree + aggr_indegree +
+			affil_outdegree + affil_indegree +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.lcd.7.us.p <-
+	merge(
+		DT.lcd.7.us[iteration != 0],
+		DT.lcd.7.us[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+# DT.lcd.7.pless <- DT.lcd.7.p[, sum(estimate < estimate.obs), term]
+# DT.lcd.7.pless[,'pless'] <- DT.lcd.7.pless$V1/1000
+# DT.lcd.7.pmore <- DT.lcd.7.p[, sum(estimate > estimate.obs), term]
+# DT.lcd.7.pmore[,'pmore'] <- DT.lcd.7.pmore$V1/1000
+
+
+DT.lcd.7.us.pboth <- DT.lcd.7.us.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
+
+
 
 
 # all
@@ -229,6 +268,40 @@ DT.lcd.2.obs <- glmer(log(longevity_years) ~
 											family = 'gaussian')
 DT.lcd.2.ci <- confint(DT.lcd.2.obs, method = 'profile')
 DT.lcd.2.ci.tab<- as.data.frame(DT.lcd.2.ci)
+
+
+DT.lcd.2.us <- DT[period == 'cd', {
+	m <- glmer(
+		log(longevity_years) ~
+			ego_period_rank +
+			alone +
+			twi_degree +
+			aggr_outdegree + aggr_indegree +
+			affil_outdegree + affil_indegree +
+			offset(log(clan_size)) +
+			offset(log(nSession)) +
+			(1 | mom),
+		data = .SD,
+		family = 'gaussian'
+	)
+	tidy(m)
+}, by = iteration]
+
+
+DT.lcd.2.us.p <-
+	merge(
+		DT.lcd.2.us[iteration != 0],
+		DT.lcd.2.us[iteration == 0, .(effect, group, term, estimate)],
+		by = c('effect', 'group', 'term'),
+		suffixes = c('', '.obs')
+	)
+
+
+DT.lcd.2.us.pboth <- DT.lcd.2.us.p[, .(estimate = unique(estimate.obs), min = min(estimate), max = max(estimate),
+																 sumless = sum(estimate < estimate.obs), summore = sum(estimate > estimate.obs),
+																 pless = sum(estimate < estimate.obs)/1000, pmore = sum(estimate > estimate.obs)/1000),
+														 term]
+
 
 
 
