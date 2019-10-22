@@ -25,9 +25,12 @@ asso <- readRDS(derived[grepl('prep-asso', derived)])
 life <- readRDS(derived[grepl('ego-life', derived)])
 
 
-## Set column names
+# Set column names
 groupCol <- 'group'
 idCol <- 'hyena'
+
+# Set focal individual
+selfocal <- 'art'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
@@ -44,10 +47,10 @@ gridTheme <- gridExtra::ttheme_default(
 )
 
 ### Association network ----
-focal <- life[ego == 'art']
+focal <- life[ego == selfocal]
 
-nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %dopar% {
-	sub <- asso[life[i],
+nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %do% {
+	sub <- asso[focal[i],
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
 	ego <- sub$ego[[i]]
@@ -60,14 +63,12 @@ nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %dopar% {
 })
 
 ### Make networks for each life stage ----
-#life <- life[1:5]
-
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
 
-# Generate a GBI for each ego's life stage
-gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	sub <- asso[life[i],
+# Generate a GBI for each life stage
+gbiLs <- foreach(i = seq(1, nrow(focal))) %do% {
+	sub <- asso[focal[i],
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
 
@@ -78,28 +79,25 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Calculate TWI
 source('R/twi.R')
-twiLs <- foreach(g = gbiLs) %dopar% {
+twiLs <- foreach(g = gbiLs) %do% {
 	twi(g)
 }
 
 # Generate graph and calculate network metrics
-mets <- foreach(n = seq_along(twiLs)) %dopar% {
+nets <- foreach(n = seq_along(twiLs)) %do% {
 	g <- graph.adjacency(twiLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
 	w <- E(g)$weight
-	cbind(data.table(
-		twi_degree = degree(g),
-		twi_strength = strength(g, weights = w),
-		twi_betweenness = betweenness(g, directed = FALSE, weights = 1/w),
-		ID = names(degree(g))
-	), life[n])
+	g
 }
-###
+names(nets) <- focal$period
 
 
+### Plot nets
+cd <- nets[['cd']]
 
-gdist <- ggplot(m, aes(
+<- ggplot(m, aes(
 	x = X,
 	y = Y,
 	xend = Xend,
