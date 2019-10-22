@@ -1,5 +1,5 @@
 ### Flowchart figure
-
+# Alec Robitaille
 
 ### Packages ----
 pkgs <- c(
@@ -10,7 +10,8 @@ pkgs <- c(
 	'spatsoc',
 	'igraph',
 	'ggnetwork',
-	'gridExtra'
+	'gridExtra',
+	'foreach'
 )
 p <- lapply(pkgs, library, character.only = TRUE)
 
@@ -43,8 +44,9 @@ gridTheme <- gridExtra::ttheme_default(
 )
 
 ### Association network ----
+focal <- life[ego == 'art']
 
-nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
+nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %dopar% {
 	sub <- asso[life[i],
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
@@ -57,7 +59,7 @@ nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
 	return(cbind(nsesh[hyena == ego], period))
 })
 
-### Make networks for each ego*life stage ----
+### Make networks for each life stage ----
 #life <- life[1:5]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
