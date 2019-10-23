@@ -30,7 +30,7 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 # Set focal individual
-selfocal <- 'art'
+selfocal <- 'mono'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
@@ -49,6 +49,7 @@ gridTheme <- gridExtra::ttheme_default(
 ### Association network ----
 focal <- life[ego == selfocal]
 
+# Need this?
 nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %do% {
 	sub <- asso[focal[i],
 							on = .(sessiondate >= period_start,
@@ -96,54 +97,23 @@ names(nets) <- focal$period
 
 ### Plot nets
 cd <- nets[['cd']]
+plot(nets[[3]])
+ggplot(ggnetwork(cd),
+			 aes(x = x, y = y, xend = xend, yend = yend)) +
+	geom_edges(color = 'grey', alpha = 0.1) +
+	geom_nodes() +
+	theme_blank()
+# geom_edges(aes(color = type)) +
+# geom_nodes(aes(color = family)) +
+# theme_blank()
 
-<- ggplot(m, aes(
-	x = X,
-	y = Y,
-	xend = Xend,
-	yend = Yend
-)) +
-	geom_edges() +
-	geom_nodes(aes(color = ID1), size = 7) +
+geom_nodes(aes(color = ID1), size = 7) +
 	geom_nodetext(aes(label = ID1)) +
-	scale_color_manual(breaks = DT$ID1, values = pal) +
+	# scale_color_manual(breaks = DT$ID1, values = pal) +
 	guides(color = FALSE) +
 	theme(axis.line = element_blank(),
 				panel.border = element_rect(fill = NA))
 
-
-### Edge nn ----
-m <- melt(distm)
-setDT(m)
-m <-
-	m[value != 0][, .SD[value == min(value)], Var1][order(value), .(Var1, Var2)]
-setnames(m, c('ID', 'NN'))
-setnames(DT, 'ID1', 'ID')
-m[DT, c('X', 'Y') := .(X, Y), on = 'ID']
-m <- merge(m,
-					 DT[, .(ID, X, Y)],
-					 by.x = 'NN',
-					 by.y = 'ID',
-					 suffixes = c('', 'end'))
-
-
-edgenn <-
-	ggplot() +
-	annotation_custom(tableGrob(m[order(ID), .(ID, NN)], rows = NULL))
-
-gnn <- ggplot(m, aes(
-	x = X,
-	y = Y,
-	xend = Xend,
-	yend = Yend
-)) +
-	geom_edges() +
-	geom_nodes(aes(color = ID), size = 7) +
-	geom_nodetext(aes(label = ID)) +
-	scale_color_manual(breaks = DT$ID, values = pal) +
-	guides(color = FALSE) +
-	theme(axis.line = element_blank(),
-				panel.border = element_rect(fill = NA))
 
 ### Output ----
 fig5 <- gdist + edgedist + gnn + edgenn +
