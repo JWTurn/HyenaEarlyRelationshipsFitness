@@ -116,20 +116,22 @@ dtnets[, period := tools::toTitleCase(period)]
 		fill = 'red',
 		data = dtnets[vertex.names == selfocal]
 	) +
-	geom_nodetext(aes(label = label)) +
+	# geom_nodetext(aes(label = label)) +
 	theme_blank() +
 	facet_wrap( ~ period))
 
 
 ### Patchwork ----
-fig <- gnets + ggtitle(selfocal) +
+(fig <- gnets +
+ 	ggtitle('Mono') +
 	theme(
+		plot.title = element_text(hjust = 0.5),
 		plot.tag = element_text(size = 14, face = 2),
 		legend.position = c(.9, .75),
 		legend.text = element_text(size = 16, face = 1),
 		legend.title = element_text(size = 16, face = 1)
-	)
-fig
+	))
+
 
 
 ### Output ---
