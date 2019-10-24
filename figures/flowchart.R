@@ -98,8 +98,9 @@ names(nets) <- focal$period
 ### Plot nets
 dtnets <- rbindlist(lapply(nets, ggnetwork), idcol = 'period')
 dtnets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
+dtnets[, period := tools::toTitleCase(period)]
 
-ggplot(dtnets,
+(gnets <- ggplot(dtnets,
 			 aes(
 			 	x = x,
 			 	y = y,
@@ -117,20 +118,18 @@ ggplot(dtnets,
 	) +
 	geom_nodetext(aes(label = label)) +
 	theme_blank() +
-	facet_wrap( ~ period)
+	facet_wrap( ~ period))
 
 
 ### Patchwork ----
-fig5 <- gdist + edgedist + gnn + edgenn +
-	plot_layout(ncol = 2, widths = c(3.4, 1)) +
-	plot_annotation(tag_levels = 'A') &
+fig <- gnets + ggtitle(selfocal) +
 	theme(
 		plot.tag = element_text(size = 14, face = 2),
 		legend.position = c(.9, .75),
 		legend.text = element_text(size = 16, face = 1),
 		legend.title = element_text(size = 16, face = 1)
 	)
-
+fig
 
 
 ### Output ---
