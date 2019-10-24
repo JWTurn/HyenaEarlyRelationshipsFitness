@@ -96,26 +96,31 @@ names(nets) <- focal$period
 
 
 ### Plot nets
-cd <- nets[['cd']]
-plot(nets[[3]])
-ggplot(ggnetwork(cd),
-			 aes(x = x, y = y, xend = xend, yend = yend)) +
+dtnets <- rbindlist(lapply(nets, ggnetwork), idcol = 'period')
+dtnets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
+
+ggplot(dtnets,
+			 aes(
+			 	x = x,
+			 	y = y,
+			 	xend = xend,
+			 	yend = yend
+			 )) +
 	geom_edges(color = 'grey', alpha = 0.1) +
 	geom_nodes() +
-	theme_blank()
-# geom_edges(aes(color = type)) +
-# geom_nodes(aes(color = family)) +
-# theme_blank()
+	geom_nodes(
+		color = 'red',
+		shape = 19,
+		size = 8,
+		fill = 'red',
+		data = dtnets[vertex.names == selfocal]
+	) +
+	geom_nodetext(aes(label = label)) +
+	theme_blank() +
+	facet_wrap( ~ period)
 
-geom_nodes(aes(color = ID1), size = 7) +
-	geom_nodetext(aes(label = ID1)) +
-	# scale_color_manual(breaks = DT$ID1, values = pal) +
-	guides(color = FALSE) +
-	theme(axis.line = element_blank(),
-				panel.border = element_rect(fill = NA))
 
-
-### Output ----
+### Patchwork ----
 fig5 <- gdist + edgedist + gnn + edgenn +
 	plot_layout(ncol = 2, widths = c(3.4, 1)) +
 	plot_annotation(tag_levels = 'A') &
@@ -126,6 +131,9 @@ fig5 <- gdist + edgedist + gnn + edgenn +
 		legend.title = element_text(size = 16, face = 1)
 	)
 
+
+
+### Output ---
 ggsave(
 	filename = 'figures/Figure5.pdf',
 	plot = fig5,
