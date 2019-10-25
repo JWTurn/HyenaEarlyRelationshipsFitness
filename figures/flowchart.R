@@ -24,6 +24,12 @@ asso <- readRDS(derived[grepl('prep-asso', derived)])
 # Life stages
 life <- readRDS(derived[grepl('ego-life', derived)])
 
+# Aggression
+aggr <- readRDS(derived[grepl('prep-aggr', derived)])
+
+# Affiliation
+affil <- readRDS(derived[grepl('prep-affil', derived)])
+
 
 # Set column names
 groupCol <- 'group'
@@ -46,24 +52,11 @@ gridTheme <- gridExtra::ttheme_default(
 	base_size = fontSize
 )
 
-### Association network ----
 focal <- life[ego == selfocal]
 
-# Need this?
-nsesh <- rbindlist(foreach(i = seq(1, nrow(focal))) %do% {
-	sub <- asso[focal[i],
-							on = .(sessiondate >= period_start,
-										 sessiondate < period_end)]
-	ego <- sub$ego[[i]]
-	period <- sub$period[[i]]
 
-	uasso <- unique(sub[, .(hyena, session)])
-	uasso[, nSession := .N, session]
-	nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1)), hyena]
-	return(cbind(nsesh[hyena == ego], period))
-})
-
-### Make networks for each life stage ----
+### Association networks ----
+## Make networks for each life stage
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
 
@@ -95,30 +88,62 @@ nets <- foreach(n = seq_along(twiLs)) %do% {
 names(nets) <- focal$period
 
 
+### Aggression networks ----
+## Make networks for each ego*life stage
+# To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
+aggr[, idate := sessiondate]
+
+#  average of behavior1 during period
+avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	focal <- aggr[life[i],
+								on = .(sessiondate >= period_start,
+											 sessiondate < period_end)]
+	focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
+}
+
+# Create edge list
+edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
+	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(avgLs[[i]], twi,
+				by.x = c('aggressor', 'recip'),
+				by.y = c('Var1', 'Var2'), all.x = TRUE)
+}
+
+# Generate graph and calculate network metrics
+aggrnets <- foreach(i = seq_along(edgeLs)) %dopar% {
+	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
+	graph_from_data_frame(sub[, .(aggressor, recip)], directed = TRUE)
+}
+
+out <- rbindlist(mets)
+
+
 ### Plot nets
 dtnets <- rbindlist(lapply(nets, ggnetwork), idcol = 'period')
 dtnets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
 dtnets[, period := tools::toTitleCase(period)]
 
 (gnets <- ggplot(dtnets,
-			 aes(
-			 	x = x,
-			 	y = y,
-			 	xend = xend,
-			 	yend = yend
-			 )) +
-	geom_edges(color = 'grey', alpha = 0.1) +
-	geom_nodes() +
-	geom_nodes(
-		color = 'red',
-		shape = 19,
-		size = 8,
-		fill = 'red',
-		data = dtnets[vertex.names == selfocal]
-	) +
-	# geom_nodetext(aes(label = label)) +
-	theme_blank() +
-	facet_wrap( ~ period))
+								 aes(
+								 	x = x,
+								 	y = y,
+								 	xend = xend,
+								 	yend = yend
+								 )) +
+		geom_edges(color = 'grey', alpha = 0.1) +
+		geom_nodes() +
+		geom_nodes(
+			color = 'red',
+			shape = 19,
+			size = 8,
+			fill = 'red',
+			data = dtnets[vertex.names == selfocal]
+		) +
+		# geom_nodetext(aes(label = label)) +
+		theme_blank() +
+		facet_wrap( ~ period))
+
 
 
 ### Patchwork ----
@@ -131,6 +156,7 @@ dtnets[, period := tools::toTitleCase(period)]
 		legend.text = element_text(size = 16, face = 1),
 		legend.title = element_text(size = 16, face = 1)
 	))
+
 
 
 
