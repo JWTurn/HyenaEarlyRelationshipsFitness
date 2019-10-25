@@ -152,14 +152,24 @@ names(affilnets) <- paste0('affil-', focal$period)
 
 
 ### Plot nets
-dtnets <- rbindlist(lapply(c(assonets, aggrnets, affilnets),
+nets <- rbindlist(lapply(c(assonets, aggrnets, affilnets),
 													 ggnetwork),
 										idcol = 'nm',
 										fill = TRUE)
-dtnets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
+nets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
+
+nets[, c('type', 'period') := tstrsplit(nm, '-')]
+
+nets[period == 'cd', period := 'CD']
+nets[period == 'postgrad', period := 'DI']
+nets[period == 'adult', period := 'Adult']
 
 
-(gnets <- ggplot(dtnets,
+# t! And we can do the same for the aggression and affiliation networks
+#too for the 3x3 panel we talked about?
+#reorder so it's CD, DI, adult,
+
+(gnets <- ggplot(nets,
 								 aes(
 								 	x = x,
 								 	y = y,
