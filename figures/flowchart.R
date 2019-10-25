@@ -45,7 +45,8 @@ theme_set(theme_classic())
 theme_update(axis.text = element_blank(),
 						 axis.title = element_blank(),
 						 axis.ticks = element_blank(),
-						 aspect.ratio = 1)
+						 aspect.ratio = 1,
+						 line = element_blank())
 
 fontSize <- 24
 gridTheme <- gridExtra::ttheme_default(
@@ -205,7 +206,10 @@ nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
 		facet_grid(type ~ period) +
-		guides(alpha = FALSE))
+		guides(alpha = FALSE) +
+		ggtitle('Mono') +
+		theme(
+			plot.title = element_text(hjust = 0.5)))
 
 
 ### Timeline ----
@@ -230,16 +234,18 @@ focal[period == 'adult', period := 'Adult']
 		y = 0.1,
 		label = period
 	)) +
+	geom_text(aes(x = period_end,
+								y = -.1,
+								label = period_end)) +
 	geom_text(aes(x = period_start,
-								y = -1,
+								y = -.1,
 								label = period_start)) +
 	guides(color = FALSE) +
-	coord_fixed(ratio = 0.1))
+	coord_fixed(ratio = .0001, clip = "off"))
 
 
 ### Patchwork ----
-(fig <- gnets  /
- 	ggtitle('Mono') +
+(fig <- gnets / tmln &
 	theme(
 		plot.title = element_text(hjust = 0.5),
 		plot.tag = element_text(size = 14, face = 2),
