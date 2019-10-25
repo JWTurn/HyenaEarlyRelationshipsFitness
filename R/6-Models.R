@@ -56,16 +56,37 @@ DT[,'alone'] <- DT$nAlone/DT$nSession
 #saveRDS(DT, paste0(derived, 'DT_obs_rands.Rds'))
 
 #### data for publishing ####
-DT.pub <- DT[,.(ego, period, ego_period_rank, clan_size, mom, nSession,
-								alone, twi_degree, twi_strength, twi_betweenness,
-								aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
-								affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness,
-								annual_rs, longevity_years, iteration, observed)]
-DT.pub[period == 'postgrad', period := 'di']
-
-write.csv(DT.pub, file = paste0(derived, 'SNfitnessData_2019-04-29.csv'))
+# DT.pub <- DT[,.(ego, period, ego_period_rank, clan_size, mom, nSession,
+# 								alone, twi_degree, twi_strength, twi_betweenness,
+# 								aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+# 								affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness,
+# 								annual_rs, longevity_years, iteration, observed)]
+# DT.pub[period == 'postgrad', period := 'di']
+#
+# write.csv(DT.pub, file = paste0(derived, 'SNfitnessData_2019-04-29.csv'))
 
 DT.obs <- DT[iteration == 0]
+
+### correlations ####
+
+DT.cd <- DT.obs[period=='cd', .(ego_period_rank,
+								alone, twi_degree, twi_strength, twi_betweenness,
+								aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+								affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.cd))
+
+DT.di <- DT.obs[period=='di', .(ego_period_rank,
+																alone, twi_degree, twi_strength, twi_betweenness,
+																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.di))
+
+DT.ad <- DT.obs[period=='adult', .(ego_period_rank,
+																alone, twi_degree, twi_strength, twi_betweenness,
+																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.ad))
+
 
 ### Models ----
 #### best models for longevity CD ####
@@ -107,6 +128,7 @@ DT.lcd.7.pboth <- DT.lcd.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 															 term]
 
 
+
 DT.lcd.7.obs <- glmer(log(longevity_years) ~
 												ego_period_rank +
 												scale(twi_degree) +
@@ -117,6 +139,7 @@ DT.lcd.7.obs <- glmer(log(longevity_years) ~
 												(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+broom.mixed::tidy(DT.lcd.7.obs, effects = 'ran_vals')
 DT.lcd.7.ci <- confint(DT.lcd.7.obs, method = 'profile')
 DT.lcd.7.ci.tab<-as.data.frame(DT.lcd.7.ci)
 
