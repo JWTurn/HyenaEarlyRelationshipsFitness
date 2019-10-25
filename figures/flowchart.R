@@ -189,18 +189,17 @@ nets[type == 'Association', weightScale := 1]
 								 	xend = xend,
 								 	yend = yend
 								 )) +
-		geom_edges(color = 'grey', alpha = 0.1) +
+		geom_edges(aes(size = weightScale), color = 'grey', alpha = 1) +
 		geom_nodes() +
 		geom_nodes(
-			color = 'red',
+			color = 'blue',
 			shape = 19,
 			size = 4,
-			fill = 'red',
 			data = nets[vertex.names == selfocal]
 		) +
 		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
-		facet_wrap(type ~ period))
+		facet_grid(type ~ period))
 
 # TODO: timeline
 
