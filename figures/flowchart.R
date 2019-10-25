@@ -111,18 +111,53 @@ edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
 }
 
 # Generate graph and calculate network metrics
-aggrnets <- foreach(i = seq_along(edgeLs)) %dopar% {
+aggrnets <- foreach(i = seq_along(edgeLs)) %do% {
 	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
 	graph_from_data_frame(sub[, .(aggressor, recip)], directed = TRUE)
 }
+names(aggrnets) <- paste0('aggr-', focal$period)
 
-out <- rbindlist(mets)
+
+### Affiliation networks ----
+# To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
+affil[, idate := sessiondate]
+
+# Count number of (directed) affiliations between individuals
+countLs <- foreach(i = seq(1, nrow(focal))) %do% {
+	f <- affil[focal[i],
+								 on = .(sessiondate >= period_start,
+								 			 sessiondate < period_end)]
+	f[, .N, .(ll_receiver, ll_solicitor)]
+}
+
+# Create edge list
+edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
+	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
+	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+				by.y = c('Var1', 'Var2'), all.x = TRUE)
+}
+
+# Generate graph and calculate network metrics
+affilnets <- foreach(i = seq_along(edgeLs)) %do% {
+	sub <- edgeLs[[i]][value != 0]
+	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
+														 directed = TRUE)
+	w <- sub[, N / value]
+	E(g)$weight <- w
+
+	g
+}
+names(affilnets) <- paste0('affil-', focal$period)
 
 
 ### Plot nets
-dtnets <- rbindlist(lapply(nets, ggnetwork), idcol = 'period')
+dtnets <- rbindlist(lapply(c(assonets, aggrnets, affilnets),
+													 ggnetwork),
+										idcol = 'nm',
+										fill = TRUE)
 dtnets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
-dtnets[, period := tools::toTitleCase(period)]
+
 
 (gnets <- ggplot(dtnets,
 								 aes(
