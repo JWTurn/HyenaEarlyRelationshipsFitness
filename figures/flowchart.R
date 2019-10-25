@@ -113,7 +113,14 @@ edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
 # Generate graph and calculate network metrics
 aggrnets <- foreach(i = seq_along(edgeLs)) %do% {
 	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
-	graph_from_data_frame(sub[, .(aggressor, recip)], directed = TRUE)
+	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
+														 directed = TRUE)
+
+	# average of behavior1 during period/AI during period
+	w <- sub[, avgB1 / value]
+	E(g)$weight <- w
+
+	g
 }
 names(aggrnets) <- paste0('aggr-', focal$period)
 
