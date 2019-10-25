@@ -179,8 +179,8 @@ nets[, type := factor(type, levels = c('Association', 'Aggression', 'Affiliation
 
 nets[, period := factor(period, levels=c('CD','DI','Adult'))]
 
-nets[, weightScale := scale(weight), by = type]
-nets[type == 'Association', weightScale := 1]
+nets[, weightCut := cut(weight, breaks = 4), type]
+nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 
 (gnets <- ggplot(nets,
 								 aes(
@@ -189,9 +189,11 @@ nets[type == 'Association', weightScale := 1]
 								 	xend = xend,
 								 	yend = yend
 								 )) +
-		geom_edges(aes(alpha = weight),
-							 data = nets[type != 'Association']) +
-		geom_edges(alpha = 0.1, color = 'grey75',
+		geom_edges(aes(alpha = weightCut),
+							 data = nets[type == 'Aggression']) +
+		geom_edges(aes(alpha = weightCut),
+							 data = nets[type == 'Affiliation']) +
+		geom_edges(aes(alpha = weightCut), #color = 'grey65',
 							 data = nets[type == 'Association']) +
 		geom_nodes() +
 		geom_nodes(
@@ -205,11 +207,38 @@ nets[type == 'Association', weightScale := 1]
 		facet_grid(type ~ period) +
 		guides(alpha = FALSE))
 
-# TODO: timeline
+
+### Timeline ----
+focal[period == 'cd', period := 'CD']
+focal[period == 'postgrad', period := 'DI']
+focal[period == 'adult', period := 'Adult']
+
+(tmln <- ggplot(focal,
+			 aes(x = period_start)) +
+	geom_hline(yintercept = 0,
+						 color = "black",
+						 size = 0.3) +
+	geom_segment(
+		aes(x = period_start, xend = period_end, color = period),
+		linetype = 1,
+		size = 8,
+		y = 0,
+		yend = 0
+	) +
+	geom_text(aes(
+		x = period_start - 20 + (period_end - period_start) / 2,
+		y = 0.1,
+		label = period
+	)) +
+	geom_text(aes(x = period_start,
+								y = -1,
+								label = period_start)) +
+	guides(color = FALSE) +
+	coord_fixed(ratio = 0.1))
 
 
 ### Patchwork ----
-(fig <- gnets +
+(fig <- gnets  /
  	ggtitle('Mono') +
 	theme(
 		plot.title = element_text(hjust = 0.5),
