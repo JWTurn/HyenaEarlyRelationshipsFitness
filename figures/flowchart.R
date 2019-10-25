@@ -181,14 +181,15 @@ nets[period == 'adult', period := 'Adult']
 		geom_nodes(
 			color = 'red',
 			shape = 19,
-			size = 8,
+			size = 4,
 			fill = 'red',
-			data = dtnets[vertex.names == selfocal]
+			data = nets[vertex.names == selfocal]
 		) +
 		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
-		facet_wrap( ~ period))
+		facet_wrap(type ~ period))
 
+# TODO: timeline
 
 
 ### Patchwork ----
