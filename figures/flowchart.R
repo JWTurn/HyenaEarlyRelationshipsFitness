@@ -78,14 +78,14 @@ twiLs <- foreach(g = gbiLs) %do% {
 }
 
 # Generate graph and calculate network metrics
-nets <- foreach(n = seq_along(twiLs)) %do% {
+assonets <- foreach(n = seq_along(twiLs)) %do% {
 	g <- graph.adjacency(twiLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
 	w <- E(g)$weight
 	g
 }
-names(nets) <- focal$period
+names(assonets) <- paste0('association-', focal$period)
 
 
 ### Aggression networks ----
