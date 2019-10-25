@@ -189,7 +189,10 @@ nets[type == 'Association', weightScale := 1]
 								 	xend = xend,
 								 	yend = yend
 								 )) +
-		geom_edges(aes(size = weightScale), color = 'grey', alpha = 1) +
+		geom_edges(aes(alpha = weight),
+							 data = nets[type != 'Association']) +
+		geom_edges(alpha = 0.1, color = 'grey75',
+							 data = nets[type == 'Association']) +
 		geom_nodes() +
 		geom_nodes(
 			color = 'blue',
@@ -199,7 +202,8 @@ nets[type == 'Association', weightScale := 1]
 		) +
 		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
-		facet_grid(type ~ period))
+		facet_grid(type ~ period) +
+		guides(alpha = FALSE))
 
 # TODO: timeline
 
