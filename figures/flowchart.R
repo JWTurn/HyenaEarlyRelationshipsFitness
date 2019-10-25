@@ -94,11 +94,11 @@ names(assonets) <- paste0('association-', focal$period)
 aggr[, idate := sessiondate]
 
 #  average of behavior1 during period
-avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	focal <- aggr[life[i],
+avgLs <- foreach(i = seq(1, nrow(focal))) %do% {
+	f <- aggr[focal[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
-	focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
+	f[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
 }
 
 # Create edge list
