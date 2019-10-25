@@ -171,10 +171,16 @@ nets[period == 'cd', period := 'CD']
 nets[period == 'postgrad', period := 'DI']
 nets[period == 'adult', period := 'Adult']
 
+nets[type == 'affil', type := 'Affiliation']
+nets[type == 'association', type := 'Association']
+nets[type == 'aggr', type := 'Aggression']
 
-# t! And we can do the same for the aggression and affiliation networks
-#too for the 3x3 panel we talked about?
-#reorder so it's CD, DI, adult,
+nets[, type := factor(type, levels = c('Association', 'Aggression', 'Affiliation'))]
+
+nets[, period := factor(period, levels=c('CD','DI','Adult'))]
+
+nets[, weightScale := scale(weight), by = type]
+nets[type == 'Association', weightScale := 1]
 
 (gnets <- ggplot(nets,
 								 aes(
