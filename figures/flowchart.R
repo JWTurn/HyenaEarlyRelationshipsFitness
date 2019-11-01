@@ -265,10 +265,13 @@ focal[period == 'adult', period := 'Adult']
 img <- image_data('f1b665ae-8fe9-42e4-b03a-4e9ae8213244', 128)[[1]]
 gimg <- (ggplot() + add_phylopic(img, 1))
 
+library(grid)
+library(png)
+gimg <- ggplot() + annotation_custom(rasterGrob(readPNG('figures/IMG_3155.png')))
 
 ### Patchwork ----
 (fig <- gimg / tmln / gnets  +
- 	plot_layout(ncol = 1, heights = c(0.5, 0.5, 3))
+ 	plot_layout(ncol = 1, heights = c(1, 0.5, 3.5))
  	#&
 	# theme(
 	# 	plot.title = element_text(hjust = 0.5),
