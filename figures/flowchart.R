@@ -11,7 +11,8 @@ pkgs <- c(
 	'igraph',
 	'ggnetwork',
 	'gridExtra',
-	'foreach'
+	'foreach',
+	'rphylopic'
 )
 p <- lapply(pkgs, library, character.only = TRUE)
 
