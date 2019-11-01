@@ -204,13 +204,10 @@ nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 			size = 4,
 			data = nets[vertex.names == selfocal]
 		) +
-		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
-		facet_grid(type ~ period) +
-		guides(alpha = FALSE) +
-		ggtitle('Mono') +
-		theme(
-			plot.title = element_text(hjust = 0.5)))
+		facet_grid(type ~ period, switch = 'y') +
+		guides(alpha = FALSE)
+)
 
 
 ### Timeline ----
