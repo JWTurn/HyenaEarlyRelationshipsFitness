@@ -259,7 +259,7 @@ focal[period == 'adult', period := 'Adult']
 
 
 ### Silhouette ----
-img <- image_data('8023a0f8-c25e-4d6a-a8d2-307f54c6d736', 128)[[1]]
+img <- image_data('f1b665ae-8fe9-42e4-b03a-4e9ae8213244', 128)[[1]]
 gimg <- (ggplot() + add_phylopic(img, 1))
 
 
