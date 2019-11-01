@@ -283,11 +283,14 @@ gimg <- (ggplot() + add_phylopic(img, 1))
 
 
 ### Output ---
+# 1.36
+w <- 170
+h <- 1.36 * w
 ggsave(
 	filename = 'figures/flowchart.png',
 	plot = fig,
-	width = 95,
-	height = 245,
+	width = w,
+	height = h,
 	units = 'mm'
 )
 
