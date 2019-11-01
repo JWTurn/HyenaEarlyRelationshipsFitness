@@ -184,6 +184,9 @@ nets[, period := factor(period, levels=c('CD','DI','Adult'))]
 nets[, weightCut := cut(weight, breaks = 4), type]
 nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 
+# for aesthetic
+nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
+
 (gnets <- ggplot(nets,
 								 aes(
 								 	x = x,
