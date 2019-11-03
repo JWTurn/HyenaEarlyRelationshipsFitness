@@ -14,6 +14,16 @@ raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
 egos <- fread(paste0(raw, 'egos_filtered.csv'))
+hyenas <- fread(paste0(raw, 'tblHyenas.csv'))
+
+ego.hyenas <- hyenas[id %chin% egos$ego]
+ego.moms <- hyenas[mom%chin% egos$mom]
+ego.twins <- merge(ego.hyenas[,.(ego=id, mom, birthdate, ego.number.littermates = number.littermates, ego.litrank = litrank)],
+									 hyenas[,.(id, mom, birthdate, sex, number.littermates, litrank)], by=c('mom','birthdate'), all.x = T)
+ego.twins<-ego.twins[ego!=id]
+sibs <- ego.twins[,uniqueN(ego), by=.(mom)]
+sib.twins <- ego.twins[id %chin% egos$ego]
+ego.hyenas[,.(id, number.littermates, litrank, )]
 
 # mets_a <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
 # mets_b <- readRDS(paste0(derived, 'observed-random-metrics_b.Rds'))
@@ -69,19 +79,19 @@ DT.obs <- DT[iteration == 0]
 
 ### correlations ####
 
-DT.cd <- DT.obs[period=='cd', .(ego_period_rank,
+DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
 								alone, twi_degree, twi_strength, twi_betweenness,
 								aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
 								affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
 View(cor(DT.cd))
 
-DT.di <- DT.obs[period=='di', .(ego_period_rank,
+DT.di <- DT.obs[period=='postgrad', .(nSession, ego_period_rank,
 																alone, twi_degree, twi_strength, twi_betweenness,
 																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
 																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
 View(cor(DT.di))
 
-DT.ad <- DT.obs[period=='adult', .(ego_period_rank,
+DT.ad <- DT.obs[period=='adult', .(nSession, ego_period_rank,
 																alone, twi_degree, twi_strength, twi_betweenness,
 																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
 																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
@@ -139,7 +149,11 @@ DT.lcd.7.obs <- glmer(log(longevity_years) ~
 												(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+summary(DT.lcd.7.obs)
+broom.mixed::tidy(DT.lcd.7.obs)
 broom.mixed::tidy(DT.lcd.7.obs, effects = 'ran_vals')
+
+
 DT.lcd.7.ci <- confint(DT.lcd.7.obs, method = 'profile')
 DT.lcd.7.ci.tab<-as.data.frame(DT.lcd.7.ci)
 
@@ -233,6 +247,11 @@ DT.lcd.19.obs <- glmer(log(longevity_years) ~
 											 	(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+
+summary(DT.lcd.19.obs)
+broom.mixed::tidy(DT.lcd.19.obs)
+broom.mixed::tidy(DT.lcd.19.obs, effects = 'ran_vals')
+
 DT.lcd.19.ci <- confint(DT.lcd.19.obs, method = 'profile')
 DT.lcd.19.ci.tab <- as.data.frame(DT.lcd.19.ci)
 
@@ -289,6 +308,12 @@ DT.lcd.2.obs <- glmer(log(longevity_years) ~
 												(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+
+summary(DT.lcd.2.obs)
+broom.mixed::tidy(DT.lcd.2.obs)
+broom.mixed::tidy(DT.lcd.2.obs, effects = 'ran_vals')
+
+
 DT.lcd.2.ci <- confint(DT.lcd.2.obs, method = 'profile')
 DT.lcd.2.ci.tab<- as.data.frame(DT.lcd.2.ci)
 
@@ -434,6 +459,12 @@ DT.lpg.7.obs <- glmer(log(longevity_years) ~
 												(1 | mom),
 											data = subset(DT, period == 'postgrad'),
 											family = 'gaussian')
+
+summary(DT.lpg.7.obs)
+broom.mixed::tidy(DT.lpg.7.obs)
+broom.mixed::tidy(DT.lpg.7.obs, effects = 'ran_vals')
+
+
 DT.lpg.7.ci <- confint(DT.lpg.7.obs, method = 'profile')
 DT.lpg.7.ci.tab<-as.data.frame(DT.lpg.7.ci)
 
@@ -543,8 +574,24 @@ DT.lad.7.obs <- glmer(log(longevity_years) ~
 												(1 | mom),
 											data = subset(DT, period == 'adult'),
 											family = 'gaussian')
+
+summary(DT.lad.7.obs)
+broom.mixed::tidy(DT.lad.7.obs)
+broom.mixed::tidy(DT.lad.7.obs, effects = 'ran_vals')
+
 DT.lad.7.ci <- confint(DT.lad.7.obs, method = 'profile')
 DT.lad.7.ci.tab<-as.data.frame(DT.lad.7.ci)
+
+DT.lad.7.obs.nomom <- glm(log(longevity_years) ~
+												ego_period_rank +
+												scale(twi_degree) +
+												scale(aggr_outdegree) + scale(aggr_indegree) +
+												scale(affil_outdegree) + scale(affil_indegree) +
+												offset(log(clan_size)) +
+												offset(log(nSession)),
+											data = subset(DT, period == 'adult'),
+											family = 'gaussian')
+lmtest::lrtest(DT.lad.7.obs,DT.lad.7.obs.nomom)
 
 
 #### best models for ARS CD ####
@@ -708,6 +755,11 @@ DT.acd.7.obs <- glmer(log(annual_rs) ~
 												(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+
+summary(DT.acd.7.obs)
+broom.mixed::tidy(DT.acd.7.obs)
+broom.mixed::tidy(DT.acd.7.obs, effects = 'ran_vals')
+
 DT.acd.7.ci <- confint(DT.acd.7.obs, method = 'profile')
 DT.acd.7.ci.tab<-as.data.frame(DT.acd.7.ci)
 
@@ -762,6 +814,11 @@ DT.acd.2.obs <- glmer(log(annual_rs) ~
 												(1 | mom),
 											data = subset(DT, period == 'cd'),
 											family = 'gaussian')
+
+summary(DT.acd.2.obs)
+broom.mixed::tidy(DT.acd.2.obs)
+broom.mixed::tidy(DT.acd.2.obs, effects = 'ran_vals')
+
 DT.acd.2.ci <- confint(DT.acd.2.obs, method = 'profile')
 DT.acd.2.ci.tab<-as.data.frame(DT.acd.2.ci)
 
@@ -935,6 +992,11 @@ DT.apg.19.a.obs <- glmer(log(annual_rs) ~
 											 	(1 | mom),
 											 data = na.omit(DT.obs[period == 'cd'], cols = 'annual_rs'),
 											 family = 'gaussian')
+
+summary(DT.apg.19.a.obs)
+broom.mixed::tidy(DT.apg.19.a.obs)
+broom.mixed::tidy(DT.apg.19.a.obs, effects = 'ran_vals')
+
 DT.apg.19.a.ci <- confint(DT.apg.19.a.obs, method = 'profile')
 
 DT.apg.19.a.ci.tab <- as.data.frame(DT.apg.19.a.ci)
@@ -990,6 +1052,11 @@ DT.apg.7.obs <- glmer(log(annual_rs) ~
 												(1 | mom),
 											data = subset(DT, period == 'postgrad'),
 											family = 'gaussian')
+
+summary(DT.apg.7.obs)
+broom.mixed::tidy(DT.apg.7.obs)
+broom.mixed::tidy(DT.apg.7.obs, effects = 'ran_vals')
+
 DT.apg.7.ci <- confint(DT.apg.7.obs, method = 'profile')
 DT.apg.7.ci.tab<-as.data.frame(DT.apg.7.ci)
 
@@ -1110,6 +1177,12 @@ DT.aad.7.obs <- glmer(log(annual_rs) ~
 												(1 | mom),
 											data = subset(DT, period == 'adult'),
 											family = 'gaussian')
+
+summary(DT.aad.7.obs)
+broom.mixed::tidy(DT.aad.7.obs)
+broom.mixed::tidy(DT.aad.7.obs, effects = 'ran_vals')
+
+
 DT.aad.7.ci <- confint(DT.aad.7.obs, method = 'profile')
 DT.aad.7.ci.tab<-as.data.frame(DT.aad.7.ci)
 
