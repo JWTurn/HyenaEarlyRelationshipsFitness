@@ -11,7 +11,8 @@ pkgs <- c(
 	'igraph',
 	'ggnetwork',
 	'gridExtra',
-	'foreach'
+	'foreach',
+	'rphylopic'
 )
 p <- lapply(pkgs, library, character.only = TRUE)
 
@@ -183,6 +184,9 @@ nets[, period := factor(period, levels=c('CD','DI','Adult'))]
 nets[, weightCut := cut(weight, breaks = 4), type]
 nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 
+# for aesthetic
+nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
+
 (gnets <- ggplot(nets,
 								 aes(
 								 	x = x,
@@ -203,13 +207,10 @@ nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 			size = 4,
 			data = nets[vertex.names == selfocal]
 		) +
-		# geom_nodetext(aes(label = label)) +
 		theme_blank() +
-		facet_grid(type ~ period) +
-		guides(alpha = FALSE) +
-		ggtitle('Mono') +
-		theme(
-			plot.title = element_text(hjust = 0.5)))
+		facet_grid(type ~ period, switch = 'y') +
+		guides(alpha = FALSE)
+)
 
 
 ### Timeline ----
@@ -218,51 +219,81 @@ focal[period == 'postgrad', period := 'DI']
 focal[period == 'adult', period := 'Adult']
 
 (tmln <- ggplot(focal,
-			 aes(x = period_start)) +
-	geom_hline(yintercept = 0,
-						 color = "black",
-						 size = 0.3) +
-	geom_segment(
-		aes(x = period_start, xend = period_end, color = period),
-		linetype = 1,
-		size = 8,
-		y = 0,
-		yend = 0
-	) +
-	geom_text(aes(
-		x = period_start - 20 + (period_end - period_start) / 2,
-		y = 0.1,
-		label = period
-	)) +
-	geom_text(aes(x = period_end,
-								y = -.1,
-								label = period_end)) +
-	geom_text(aes(x = period_start,
-								y = -.1,
-								label = period_start)) +
-	guides(color = FALSE) +
-	coord_fixed(ratio = .0001, clip = "off"))
+								 aes(x = period_start)) +
+		geom_hline(
+			yintercept = 0,
+			color = "black",
+			size = 0.3
+		) +
+		geom_segment(
+			aes(x = period_start, xend = period_end, color = period),
+			linetype = 1,
+			size = 6,
+			y = 0,
+			alpha = 0.8,
+			yend = 0
+		) +
+		geom_text(aes(
+			x = period_start - 20 + (period_end - period_start) / 2,
+			y = 0.1,
+			label = period
+		)) +
+		geom_text(aes(
+			x = period_end,
+			y = -.1,
+			label = period_end
+		), data = focal[period != 'CD']) +
+		geom_text(aes(
+			x = period_start,
+			y = -.1,
+			label = period_start
+		)) +
+		guides(color = FALSE) +
+		scale_color_tableau(palette = "Color Blind") +
+		scale_y_continuous(expand = c(0,0.1)) +
+		scale_x_date(expand = c(0.1,0)) +
+		theme(aspect.ratio=0.13) +
+		geom_point(aes(period_start, 0)) +
+		geom_point(aes(period_end, 0)) +
+		ggtitle('Monopoly') +
+		theme(
+			plot.title = element_text(hjust = 0.5))
+)
 
+
+### Silhouette ----
+img <- image_data('f1b665ae-8fe9-42e4-b03a-4e9ae8213244', 128)[[1]]
+gimg <- (ggplot() + add_phylopic(img, 1))
+
+library(grid)
+library(png)
+gimg <- ggplot() + annotation_custom(rasterGrob(readPNG('figures/IMG_3155.png')))
 
 ### Patchwork ----
-(fig <- gnets / tmln &
-	theme(
-		plot.title = element_text(hjust = 0.5),
-		plot.tag = element_text(size = 14, face = 2),
-		legend.position = c(.9, .75),
-		legend.text = element_text(size = 16, face = 1),
-		legend.title = element_text(size = 16, face = 1)
-	))
+(fig <- gimg / tmln / gnets  +
+ 	plot_layout(ncol = 1, heights = c(1, 0.5, 3.5))
+ 	#&
+	# theme(
+	# 	plot.title = element_text(hjust = 0.5),
+	# 	plot.tag = element_text(size = 14, face = 2),
+	# 	legend.position = c(.9, .75),
+	# 	legend.text = element_text(size = 16, face = 1),
+	# 	legend.title = element_text(size = 16, face = 1)
+	# )
+)
 
 
 
 
 ### Output ---
+# 1.36
+w <- 170
+h <- 1.36 * w
 ggsave(
-	filename = 'figures/Figure5.pdf',
-	plot = fig5,
-	width = 115,
-	height = 145,
+	filename = 'figures/flowchart.png',
+	plot = fig,
+	width = w,
+	height = h,
 	units = 'mm'
 )
 
