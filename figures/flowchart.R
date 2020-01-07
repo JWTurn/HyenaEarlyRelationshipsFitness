@@ -12,7 +12,10 @@ pkgs <- c(
 	'ggnetwork',
 	'gridExtra',
 	'foreach',
-	'rphylopic'
+	'rphylopic',
+	'grid',
+	'png',
+	'magick'
 )
 p <- lapply(pkgs, library, character.only = TRUE)
 
@@ -37,7 +40,8 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 # Set focal individual
-selfocal <- 'mono'
+selfocal <- 'arg'
+selfocaltitle <- 'Argon'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
@@ -198,7 +202,7 @@ nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
 							 data = nets[type == 'Aggression']) +
 		geom_edges(aes(alpha = weightCut),
 							 data = nets[type == 'Affiliation']) +
-		geom_edges(aes(alpha = weightCut), #color = 'grey65',
+		geom_edges(aes(alpha = weightCut),
 							 data = nets[type == 'Association']) +
 		geom_nodes() +
 		geom_nodes(
@@ -254,43 +258,42 @@ focal[period == 'adult', period := 'Adult']
 		scale_x_date(expand = c(0.1,0)) +
 		theme(aspect.ratio=0.13) +
 		geom_point(aes(period_start, 0)) +
-		geom_point(aes(period_end, 0)) +
-		ggtitle('Monopoly') +
-		theme(
-			plot.title = element_text(hjust = 0.5))
+		geom_point(aes(period_end, 0))
 )
 
 
 ### Silhouette ----
-img <- image_data('f1b665ae-8fe9-42e4-b03a-4e9ae8213244', 128)[[1]]
-gimg <- (ggplot() + add_phylopic(img, 1))
+if (selfocal == 'mono') {
+	img <- rphylopic::image_data('f1b665ae-8fe9-42e4-b03a-4e9ae8213244', 512)[[1]]
+} else {
+	img <- rphylopic::image_data('a160fd31-c6ba-4bd1-b2a1-dbd77014139d', 512)[[1]]
+}
 
-library(grid)
-library(png)
-gimg <- ggplot() + annotation_custom(rasterGrob(readPNG('figures/IMG_3155.png')))
+(gimg <- ggplot() +
+	add_phylopic(img, 1) +
+	labs(caption = selfocaltitle)  +
+	theme(
+		plot.caption = element_text(hjust = 0.5, size = 15)))
+
 
 ### Patchwork ----
-(fig <- gimg / tmln / gnets  +
- 	plot_layout(ncol = 1, heights = c(1, 0.5, 3.5))
- 	#&
-	# theme(
-	# 	plot.title = element_text(hjust = 0.5),
-	# 	plot.tag = element_text(size = 14, face = 2),
-	# 	legend.position = c(.9, .75),
-	# 	legend.text = element_text(size = 16, face = 1),
-	# 	legend.title = element_text(size = 16, face = 1)
-	# )
+layout <- '
+#BBB
+#CCC
+ACCC
+#CCC
+'
+
+(fig <- gimg + tmln + gnets  +
+		plot_layout(design = layout, ncol = 2, widths = c(1, 3))
 )
 
 
-
-
 ### Output ---
-# 1.36
-w <- 170
-h <- 1.36 * w
+w <- 190
+h <- 0.66 * w
 ggsave(
-	filename = 'figures/flowchart.png',
+	filename = paste0('figures/flowchart-', selfocal, '.png'),
 	plot = fig,
 	width = w,
 	height = h,
@@ -298,4 +301,10 @@ ggsave(
 )
 
 
-
+# Combine
+mono <- image_read('figures/flowchart-mono.png')
+arg <- image_read('figures/flowchart-arg.png')
+img <- c(mono, arg)
+image_write(image_append(img, stack = TRUE),
+						path = "figures/flowchart-i.png",
+						format = "png")
