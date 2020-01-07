@@ -40,8 +40,8 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 # Set focal individual
-selfocal <- 'arg'
-selfocaltitle <- 'Argon'
+selfocal <- 'hex'
+selfocaltitle <- 'Hendrix'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
@@ -189,7 +189,7 @@ nets[, weightCut := cut(weight, breaks = 4), type]
 nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 
 # for aesthetic
-nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
+# nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
 
 (gnets <- ggplot(nets,
 								 aes(
@@ -206,7 +206,7 @@ nets[vertex.names == 'mono', c('x', 'y') := .(0.5, 0.5)]
 							 data = nets[type == 'Association']) +
 		geom_nodes() +
 		geom_nodes(
-			color = 'blue',
+			color = ifelse(selfocal == 'mono', 'blue', 'orange'),
 			shape = 19,
 			size = 4,
 			data = nets[vertex.names == selfocal]
