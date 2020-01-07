@@ -8,6 +8,10 @@
 libs <- c('lme4', 'data.table', 'broom.mixed', 'ggplot2')
 lapply(libs, require, character.only = TRUE)
 
+### Function ----
+se <- function(x){
+	sd(x, na.rm = T)/ sqrt(length(na.omit(x)))
+}
 
 ### Input data ----
 raw <- 'data/raw-data/'
@@ -16,14 +20,30 @@ derived <- 'data/derived-data/'
 egos <- fread(paste0(raw, 'egos_filtered.csv'))
 hyenas <- fread(paste0(raw, 'tblHyenas.csv'))
 
+birthdate <- hyenas[,.(id, birthdate = as.Date(birthdate))]
+egos <- merge(egos, birthdate, by.x = 'ego', by.y = 'id', all.x = T)
+egos$period_start <- as.Date(egos$period_start, format = '%m/%d/%y')
+egos$period_end <- as.Date(egos$period_end, format = '%m/%d/%y')
+egos.di <- egos[period =='DI',.(ego, ageStart = (period_start - birthdate)/30, ageEnd = (period_end - birthdate)/30)]
+egos.di[,.(meanStart = mean(ageStart), meanEnd = mean(ageEnd))]
+
 ego.hyenas <- hyenas[id %chin% egos$ego]
+ego.hyenas$birthdate <- as.Date(ego.hyenas$birthdate)
+ego.hyenas$weaned <- as.Date(ego.hyenas$weaned)
+ego.wean <- ego.hyenas[,.(id ,weanAge = (weaned - birthdate)/30)]
+ego.hyenas[,.(minWean = min((weaned - birthdate)/30, na.rm = T), maxWean = max((weaned - birthdate)/30, na.rm = T),
+							meanWean = mean((weaned - birthdate)/30, na.rm = T), seWean = se((weaned - birthdate)/30))]
 ego.moms <- hyenas[mom%chin% egos$mom]
 ego.twins <- merge(ego.hyenas[,.(ego=id, mom, birthdate, ego.number.littermates = number.littermates, ego.litrank = litrank)],
-									 hyenas[,.(id, mom, birthdate, sex, number.littermates, litrank)], by=c('mom','birthdate'), all.x = T)
+									 hyenas[,.(id, mom, birthdate=as.Date(birthdate), sex, number.littermates, litrank)], by=c('mom','birthdate'), all.x = T)
 ego.twins<-ego.twins[ego!=id]
+ego.twins[,.(uniqueN(ego)), by=.(sex)]
 sibs <- ego.twins[,uniqueN(ego), by=.(mom)]
 sib.twins <- ego.twins[id %chin% egos$ego]
-ego.hyenas[,.(id, number.littermates, litrank, )]
+ego.hyenas[,.(id, number.littermates, litrank)]
+
+sib.twins.not <- ego.twins[-which(id %chin% egos$ego)]
+sib.twins.not[,.(count=uniqueN(ego)), by=.(litrank,sex)]
 
 # mets_a <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
 # mets_b <- readRDS(paste0(derived, 'observed-random-metrics_b.Rds'))
