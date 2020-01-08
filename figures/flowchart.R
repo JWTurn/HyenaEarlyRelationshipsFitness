@@ -40,23 +40,23 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 # Set focal individual
-selfocal <- 'hex'
-selfocaltitle <- 'Hendrix'
+selfocal <- 'gui'
+selfocaltitle <- 'Guiness'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
 
 theme_set(theme_classic())
-theme_update(axis.text = element_blank(),
-						 axis.title = element_blank(),
-						 axis.ticks = element_blank(),
-						 aspect.ratio = 1,
-						 line = element_blank())
+theme_update(
+	axis.text = element_blank(),
+	axis.title = element_blank(),
+	axis.ticks = element_blank(),
+	aspect.ratio = 1,
+	line = element_blank()
+)
 
 fontSize <- 24
-gridTheme <- gridExtra::ttheme_default(
-	base_size = fontSize
-)
+gridTheme <- gridExtra::ttheme_default(base_size = fontSize)
 
 focal <- life[ego == selfocal]
 
