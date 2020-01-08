@@ -285,12 +285,15 @@ ACCC
 '
 
 (fig <- gimg + tmln + gnets  +
-		plot_layout(design = layout, ncol = 2, widths = c(1, 3))
-)
+		plot_layout(
+			design = layout,
+			ncol = 2,
+			widths = c(1, 3)
+		))
 
 
 ### Output ---
-w <- 190
+w <- 220
 h <- 0.66 * w
 ggsave(
 	filename = paste0('figures/flowchart-', selfocal, '.png'),
