@@ -41,7 +41,7 @@ idCol <- 'hyena'
 
 # Set focal individual
 selfocal <- 'gui'
-selfocaltitle <- 'Guiness'
+selfocaltitle <- 'Guinness'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
