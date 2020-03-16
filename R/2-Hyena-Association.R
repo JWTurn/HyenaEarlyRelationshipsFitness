@@ -38,7 +38,7 @@ nsesh <- rbindlist(foreach(i = seq(1, nrow(life))) %dopar% {
 })
 
 ### Make networks for each ego*life stage ----
-#life <- life[1:5]
+# life <- life[1:5]
 
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
@@ -54,15 +54,14 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 					groupCol, idCol)
 }
 
-# Calculate TWI
-source('R/twi.R')
-twiLs <- foreach(g = gbiLs) %dopar% {
-	twi(g)
+# Calculate SRI
+sriLs <- foreach(g = gbiLs) %dopar% {
+	get_network(g, 'GBI', 'SRI')
 }
 
 # Generate graph and calculate network metrics
-mets <- foreach(n = seq_along(twiLs)) %dopar% {
-	g <- graph.adjacency(twiLs[[n]], 'undirected',
+mets <- foreach(n = seq_along(sriLs)) %dopar% {
+	g <- graph.adjacency(sriLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
 	w <- E(g)$weight
