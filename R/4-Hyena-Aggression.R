@@ -48,17 +48,16 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 					groupCol, idCol)
 }
 
-# Calculate TWI
-source('R/twi.R')
-twiLs <- foreach(g = gbiLs) %dopar% {
-	twi(g)
+# Calculate SRI
+sriLs <- foreach(g = gbiLs) %dopar% {
+	get_network(g, 'GBI', 'SRI')
 }
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	merge(avgLs[[i]], twi,
+	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(avgLs[[i]], sri,
 				by.x = c('aggressor', 'recip'),
 				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
