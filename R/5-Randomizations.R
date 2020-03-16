@@ -29,7 +29,7 @@ idCol <- 'ID'
 
 ## Iterations
 set.seed(13)
-iterations <- 45
+iterations <- 1000
 
 
 ### Count edges ----
@@ -62,8 +62,6 @@ randomizations.directed <- function(DT, id, count, by, nms) {
 }
 
 ### Randomize affiliation networks ----
-source('R/twi.R')
-
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
 
@@ -184,24 +182,24 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 						groupCol, idCol)
 	}
 
-	# Calculate TWI
-	twiLs <- foreach(g = gbiLs) %do% {
-		twi(g)
+	# Calculate SRI
+	sriLs <- foreach(g = gbiLs) %dopar% {
+		get_network(g, 'GBI', 'SRI')
 	}
 
 	## Combine edges, make graphs  -------------------------------------
 	# Associations
 	assoGraphs <- foreach(i = seq(1, nrow(life))) %dopar% {
-		graph.adjacency(twiLs[[i]], 'undirected',
+		graph.adjacency(sriLs[[i]], 'undirected',
 										diag = FALSE, weighted = TRUE)
 	}
 
 	# Affiliations
 	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		sriDT <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+		sriDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 		sub <-
-			merge(countLs[[i]], twiDT, by.x = c('ll_receiver', 'll_solicitor'),
+			merge(countLs[[i]], sriDT, by.x = c('ll_receiver', 'll_solicitor'),
 						by.y = c('Var1', 'Var2'), all.x = TRUE)[value != 0]
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 															 directed = TRUE)
@@ -212,9 +210,9 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 
 	# Aggressions
 	aggrGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		twiDT <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-		twiDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-		sub <- merge(avgLs[[i]], twiDT, by.x = c('aggressor', 'recip'),
+		sriDT <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+		sriDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+		sub <- merge(avgLs[[i]], sriDT, by.x = c('aggressor', 'recip'),
 								 by.y = c('Var1', 'Var2'), all.x = TRUE)[
 								 	value != 0 & (value / avgB1) != 0]
 
@@ -238,9 +236,9 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 
 		w <- E(assoG)$weight
 		assoMets <- data.table(
-			twi_degree = degree(assoG),
-			twi_strength = strength(assoG),
-			twi_betweenness = betweenness(assoG, directed = FALSE, weights = 1/w),
+			sri_degree = degree(assoG),
+			sri_strength = strength(assoG),
+			sri_betweenness = betweenness(assoG, directed = FALSE, weights = 1/w),
 			ID = names(degree(assoG))
 		)[ID == ego]
 
