@@ -3,7 +3,7 @@
 # Started: March 01 2019
 
 ### Packages ----
-libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach')
+libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach', 'doParallel')
 lapply(libs, require, character.only = TRUE)
 
 ### Import data ----
@@ -48,17 +48,16 @@ gbiLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 					groupCol, idCol)
 }
 
-# Calculate TWI
-source('R/twi.R')
-twiLs <- foreach(g = gbiLs) %dopar% {
-	twi(g)
+# Calculate SRI
+sriLs <- foreach(g = gbiLs) %dopar% {
+	get_network(g, 'GBI', 'SRI')
 }
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	merge(countLs[[i]], twi, by.x = c('ll_receiver', 'll_solicitor'),
+	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	merge(countLs[[i]], sri, by.x = c('ll_receiver', 'll_solicitor'),
 	by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
