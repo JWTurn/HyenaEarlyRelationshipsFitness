@@ -64,6 +64,13 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 }
 
 # Generate graph and calculate network metrics
+i <- 1
+sub <- edgeLs[[i]][value != 0]
+g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
+													 directed = TRUE)
+w <- sub[, lm((N / period_length) ~ value)]
+E(g)$weight <- w
+
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	sub <- edgeLs[[i]][value != 0]
 	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
