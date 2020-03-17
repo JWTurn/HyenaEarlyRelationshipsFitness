@@ -44,6 +44,9 @@ asso[, yr := year(sessiondate)]
 periods <- c('period_start', 'period_end')
 life[, (periods) := lapply(.SD, as.IDate), .SDcols = (periods)]
 
+# Calculate period length
+life[, period_length := period_end - period_start]
+
 affil[, sessiondate := as.IDate(sessiondate)]
 affil[, datetime := as.POSIXct(paste(sessiondate, grtTime))]
 affil[, yr := year(sessiondate)]
