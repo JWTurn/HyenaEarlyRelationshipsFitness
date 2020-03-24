@@ -61,16 +61,31 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
 	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 	merge(countLs[[i]], sri, by.x = c('ll_receiver', 'll_solicitor'),
-	by.y = c('Var1', 'Var2'), all.x = TRUE)
+				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
 # Generate graph and calculate network metrics
 i <- 1
 sub <- edgeLs[[i]][value != 0]
+
+sri <- sriLs[[i]]
+melted <- melt(as.data.table(sri, keep.rownames = 'id1'), id.vars = 'id1')
+
+setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
+
+sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
+
+options(na.action="na.exclude")
+
+sub[, res := residuals(lm(affilRate ~ sri))]
+
 g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 													 directed = TRUE)
-w <- sub[, lm((N / period_length) ~ value)]
+
 E(g)$weight <- w
+
+sriLs[[i]]
+
 
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	sub <- edgeLs[[i]][value != 0]
