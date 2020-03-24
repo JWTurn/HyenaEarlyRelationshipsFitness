@@ -66,25 +66,35 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 
 # Generate graph and calculate network metrics
 i <- 1
+
+# Affiliation counts and rates in edgeLs
 sub <- edgeLs[[i]][value != 0]
 
+# SRI matrices
 sri <- sriLs[[i]]
+
+# Melt SRI matrix to a three column data.table
 melted <- melt(as.data.table(sri, keep.rownames = 'id1'), id.vars = 'id1')
 
+# Setnames
 setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
 
+# Merge SRI onto affiliation data
 sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
 
-options(na.action="na.exclude")
+# Set na action to exlude to ensure NAs in res are padded
+options(na.action = "na.exclude")
 
+# Calculate residuals from affiliation rate ~ SRI
 sub[, res := residuals(lm(affilRate ~ sri))]
 
+# Generate the graph
 g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 													 directed = TRUE)
 
-E(g)$weight <- w
+# Set edge weight to residuals
+E(g)$weight <- sub$res
 
-sriLs[[i]]
 
 
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
