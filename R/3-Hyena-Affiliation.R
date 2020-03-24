@@ -35,7 +35,7 @@ countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
 
-	focal[, N := .N, .(ll_receiver, ll_solicitor)]
+	focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
 	focal[, .(ll_receiver, ll_solicitor, period_length,
 						N, affilRate = N / period_length)]
 }
