@@ -67,6 +67,10 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 # Set na action to exlude to ensure NAs in res are padded
 options(na.action = "na.exclude")
 
+range01 <- function(x) {
+	(x - min(x)) / (max(x) - min(x))
+}
+
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	# Affiliation counts and rates in edgeLs
@@ -88,13 +92,15 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
 												 type = 'deviance')]
 
+	sub[, res01 := range01(res)]
+
 	# Generate the graph
 	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
 
 	# Set edge weight to residuals
 	# TODO: deviance?
-	w <- sub$res
+	w <- sub$res01
 	E(g)$weight <- w
 
 	return(cbind(
