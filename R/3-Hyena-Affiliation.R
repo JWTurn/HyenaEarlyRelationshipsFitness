@@ -64,6 +64,9 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
+# Set na action to exlude to ensure NAs in res are padded
+options(na.action = "na.exclude")
+
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	# Affiliation counts and rates in edgeLs
@@ -81,17 +84,16 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	# Merge SRI onto affiliation data
 	sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
 
-	# Set na action to exlude to ensure NAs in res are padded
-	options(na.action = "na.exclude")
-
 	# Calculate residuals from affiliation rate ~ SRI
-	sub[, res := residuals(lm(affilRate ~ sri))]
+	sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
+												 type = 'deviance')]
 
 	# Generate the graph
 	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
 
 	# Set edge weight to residuals
+	# TODO: deviance?
 	w <- sub$res
 	E(g)$weight <- w
 
