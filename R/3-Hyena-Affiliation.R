@@ -99,7 +99,6 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 														 directed = TRUE)
 
 	# Set edge weight to residuals
-	# TODO: deviance?
 	w <- sub$res01
 	E(g)$weight <- w
 
