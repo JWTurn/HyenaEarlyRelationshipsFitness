@@ -71,12 +71,33 @@ range01 <- function(x) {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
+	# Aggression counts in edgeLs
 	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
+
+	# SRI matrices
+	sri <- sriLs[[i]]
+
+	# Melt SRI matrix to a three column data.table
+	melted <- melt(as.data.table(sri, keep.rownames = 'id1'), id.vars = 'id1')
+
+	# Setnames
+	setnames(melted, c('id1', 'variable', 'value'), c('aggressor', 'recip', 'sri'))
+
+	# Merge SRI onto affiliation data
+	sub[melted, sri := sri, on = c('aggressor', 'recip')]
+
+	# Calculate residuals from affiliation rate ~ SRI
+	sub[, res := residuals(glm(avgB1 / period_length ~ sri, family = 'binomial'),
+												 type = 'deviance')]
+
+	sub[, res01 := range01(res)]
+
+	# Generate graph
 	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 														 directed = TRUE)
 
 	# average of behavior1 during period/AI during period
-	w <- sub[, avgB1 / value]
+	w <- sub$res01
 	E(g)$weight <- w
 
 	return(
