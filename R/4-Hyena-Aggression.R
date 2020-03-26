@@ -62,6 +62,13 @@ edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 				by.y = c('Var1', 'Var2'), all.x = TRUE)
 }
 
+# Set na action to exlude to ensure NAs in res are padded
+options(na.action = "na.exclude")
+
+range01 <- function(x) {
+	(x - min(x)) / (max(x) - min(x))
+}
+
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
