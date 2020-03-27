@@ -89,6 +89,10 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 
 	sub[, res01 := range01(res)]
 
+	# Summary stats for res and res01
+	sumres <- sumfunc(sub$res)
+	sumres01 <- sumfunc(sub$res01)
+
 	# Generate graph
 	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 														 directed = TRUE)
