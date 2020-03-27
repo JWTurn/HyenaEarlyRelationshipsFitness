@@ -84,6 +84,11 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 
 	sub[, res01 := range01(res)]
 
+
+	# Summary stats for res and res01
+	sumres <- c(summary(sub$res), sd = sd(sub$res))
+	sumres01 <- c(summary(sub$res91), sd = sd(sub$res91))
+
 	# Generate the graph
 	g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 														 directed = TRUE)
@@ -103,7 +108,9 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 			affil_betweenness = betweenness(g, directed = TRUE, weights = (1/w)),
 			ID = names(degree(g))
 		),
-		life[i]
+		life[i],
+		sumres = list(sumres),
+		sumres01 = list(sumres01)
 	))
 }
 
