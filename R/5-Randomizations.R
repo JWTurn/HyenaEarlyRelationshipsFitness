@@ -210,13 +210,13 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 		# Melt SRI matrix to a three column data.table
 		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
+		melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+
 		# Setnames
 		setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
 
-		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)
-
 		# Merge SRI onto affiliation data
-		sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
+		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)[sri != 0]
 
 		# Calculate residuals from affiliation rate ~ SRI
 		sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
