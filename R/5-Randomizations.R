@@ -134,9 +134,9 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 									 			 sessiondate < period_end)]
 		focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 
-		focal <- unique(focal[, .(ll_receiver, ll_solicitor, affilIndex)])
-
-		focal[, .N, .(ll_receiver, ll_solicitor)]
+		focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
+		focal[, .(ll_receiver, ll_solicitor, period_length,
+							N, affilRate = N / period_length)]
 	}
 
 	## Aggression -------------------------------------------------
