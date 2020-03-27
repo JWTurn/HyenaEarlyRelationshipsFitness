@@ -114,7 +114,9 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 																		 weights = (1/w)),
 			ID = names(degree(g))
 		),
-		life[i]
+		life[i],
+		sumres = list(sumres),
+		sumres01 = list(sumres01)
 	))
 }
 
