@@ -167,9 +167,12 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 		focal <- randAggr[life[i],
 									on = .(sessiondate >= period_start,
 												 sessiondate < period_end)]
-		focal <- unique(focal[, .(aggressor, recip, behavior1, aggrIndex)])
-		focal[, .(avgB1 = mean(behavior1)), by = .(aggressor, recip)]
+		focal[, .(avgB1 = mean(behavior1),
+							avgB1Len = mean(behavior1) / period_length,
+							period_length = period_length[[1]]),
+					by = .(aggressor, recip)]
 	}
+	# TODO: do we need aggrIndex?
 
 	## Association -------------------------------------------------
 	# Generate a GBI for each ego's life stage
