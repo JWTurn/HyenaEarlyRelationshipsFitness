@@ -34,7 +34,7 @@ avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- aggr[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-	focal[, .(avgB1 = mean(behavior1), avgB1Len = avgB1 / period_length,
+	focal[, .(avgB1 = mean(behavior1), avgB1Len = mean(behavior1) / period_length,
 						period_length = period_length[[1]]), by = .(aggressor, recip)]
 }
 
@@ -56,11 +56,13 @@ sriLs <- foreach(g = gbiLs) %dopar% {
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
-	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	sri <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
+
+	sri[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	setnames(sri, 'value', 'sri')
 	merge(avgLs[[i]], sri,
 				by.x = c('aggressor', 'recip'),
-				by.y = c('Var1', 'Var2'), all.x = TRUE)
+				by.y = c('id1', 'variable'), all.x = TRUE)
 }
 
 # Set na action to exlude to ensure NAs in res are padded
@@ -72,20 +74,8 @@ range01 <- function(x) {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	# Aggression counts in edgeLs
-	sub <- edgeLs[[i]][value != 0 & (value / avgB1) != 0]
-
-	# SRI matrices
-	sri <- sriLs[[i]]
-
-	# Melt SRI matrix to a three column data.table
-	melted <- melt(as.data.table(sri, keep.rownames = 'id1'), id.vars = 'id1')
-
-	# Setnames
-	setnames(melted, c('id1', 'variable', 'value'), c('aggressor', 'recip', 'sri'))
-
-	# Merge SRI onto affiliation data
-	sub[melted, sri := sri, on = c('aggressor', 'recip')]
+	# Aggression counts and SRI in edgeLs
+	sub <- edgeLs[[i]][sri != 0 & (sri / avgB1Len) != 0]
 
 	# Calculate residuals from affiliation rate ~ SRI
 	sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
