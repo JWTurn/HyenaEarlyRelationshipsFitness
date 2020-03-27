@@ -34,7 +34,8 @@ avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- aggr[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-	focal[, .(avgB1 = mean(behavior1), period_length = period_length[[1]]), by = .(aggressor, recip)]
+	focal[, .(avgB1 = mean(behavior1), avgB1Len = avgB1 / period_length,
+						period_length = period_length[[1]]), by = .(aggressor, recip)]
 }
 
 # Generate a GBI for each ego's life stage
@@ -87,7 +88,7 @@ mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	sub[melted, sri := sri, on = c('aggressor', 'recip')]
 
 	# Calculate residuals from affiliation rate ~ SRI
-	sub[, res := residuals(glm(avgB1 / period_length ~ sri, family = 'binomial'),
+	sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
 												 type = 'deviance')]
 
 	sub[, res01 := range01(res)]
