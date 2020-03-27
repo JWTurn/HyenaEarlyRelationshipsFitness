@@ -76,7 +76,7 @@ range01 <- function(x) {
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	# Affiliation counts and SRI in edgeLs
-	sub <- edgeLs[[i]][value != 0]
+	sub <- edgeLs[[i]][sri != 0]
 
 	# Calculate residuals from affiliation rate ~ SRI
 	sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
