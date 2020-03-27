@@ -194,13 +194,13 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 	}
 
 	# Calculate SRI
-	sriLs <- foreach(g = gbiLs) %dopar% {
+	sriLs <- foreach(g = gbiLs) %do% {
 		get_network(g, 'GBI', 'SRI')
 	}
 
 	## Combine edges, make graphs  -------------------------------------
 	# Associations
-	assoGraphs <- foreach(i = seq(1, nrow(life))) %dopar% {
+	assoGraphs <- foreach(i = seq(1, nrow(life))) %do% {
 		graph.adjacency(sriLs[[i]], 'undirected',
 										diag = FALSE, weighted = TRUE)
 	}
