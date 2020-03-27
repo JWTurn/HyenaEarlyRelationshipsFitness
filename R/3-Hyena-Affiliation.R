@@ -58,10 +58,12 @@ sriLs <- foreach(g = gbiLs) %dopar% {
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(life))) %dopar% {
-	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
-	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	sri <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
+
+	sri[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	setnames(sri, 'value', 'sri')
 	merge(countLs[[i]], sri, by.x = c('ll_receiver', 'll_solicitor'),
-				by.y = c('Var1', 'Var2'), all.x = TRUE)
+				by.y = c('id1', 'variable'), all.x = TRUE)
 }
 
 # Set na action to exlude to ensure NAs in res are padded
@@ -73,20 +75,8 @@ range01 <- function(x) {
 
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
-	# Affiliation counts and rates in edgeLs
+	# Affiliation counts and SRI in edgeLs
 	sub <- edgeLs[[i]][value != 0]
-
-	# SRI matrices
-	sri <- sriLs[[i]]
-
-	# Melt SRI matrix to a three column data.table
-	melted <- melt(as.data.table(sri, keep.rownames = 'id1'), id.vars = 'id1')
-
-	# Setnames
-	setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
-
-	# Merge SRI onto affiliation data
-	sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
 
 	# Calculate residuals from affiliation rate ~ SRI
 	sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
