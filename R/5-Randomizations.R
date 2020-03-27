@@ -56,7 +56,8 @@ randomizations.directed <- function(DT, id, count, by, nms) {
 				l <- sample(ids, size = size)
 				r <- sample(ids, size = size)
 			}
-			list(l, r)
+			list(rep(l, length.out = .N),
+					 rep(r, length.out = .N))
 		}
 	}, by = by, .SDcols = c(id, count)]
 }
