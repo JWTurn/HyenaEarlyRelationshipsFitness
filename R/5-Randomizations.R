@@ -200,15 +200,31 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 
 	# Affiliations
 	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		sriDT <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
-		sriDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-		sub <-
-			merge(countLs[[i]], sriDT, by.x = c('ll_receiver', 'll_solicitor'),
-						by.y = c('Var1', 'Var2'), all.x = TRUE)[value != 0]
+		# Melt SRI matrix to a three column data.table
+		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
+
+		# Setnames
+		setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
+
+		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)
+
+		# Merge SRI onto affiliation data
+		sub[melted, sri := sri, on = c('ll_receiver', 'll_solicitor')]
+
+		# Calculate residuals from affiliation rate ~ SRI
+		sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
+													 type = 'deviance')]
+
+		sub[, res01 := range01(res)]
+
+		# Generate the graph
 		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
 															 directed = TRUE)
-		w <- sub[, N / value]
+
+		# Set edge weight to residuals
+		w <- sub$res01
 		E(g)$weight <- w
+
 		return(g)
 	}
 
