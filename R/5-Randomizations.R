@@ -237,17 +237,31 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 
 	# Aggressions
 	aggrGraphs <- foreach(i = seq(1, nrow(life))) %do% {
-		sriDT <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
-		sriDT[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-		sub <- merge(avgLs[[i]], sriDT, by.x = c('aggressor', 'recip'),
-								 by.y = c('Var1', 'Var2'), all.x = TRUE)[
-								 	value != 0 & (value / avgB1) != 0]
+		# Melt SRI matrix to a three column data.table
+		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
+		melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+
+		# Setnames
+		setnames(melted, c('id1', 'variable', 'value'), c('aggressor', 'recip', 'sri'))
+
+		# Merge SRI onto aggression data
+		sub <- merge(avgLs[[i]], melted, by = c('aggressor', 'recip'), all.x = TRUE)[
+			sri != 0 & (sri / avgB1) != 0]
+
+
+		# Calculate residuals from average of behavior1 during period ~ SRI
+		sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
+													 type = 'deviance')]
+
+		sub[, res01 := range01(res)]
+
+		# Generate the graph
 		g <- graph_from_data_frame(sub[, .(aggressor, recip)],
 															 directed = TRUE)
 
-		# average of behavior1 during period/AI during period
-		w <- sub[, avgB1 / value]
+		# Set edge weight to residuals
+		w <- sub$res01
 		E(g)$weight <- w
 
 		return(g)
