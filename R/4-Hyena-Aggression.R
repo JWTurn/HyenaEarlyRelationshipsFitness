@@ -72,6 +72,12 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
+sumfunc <- function(x) {
+	c(summary(x),
+		sd = sd(x),
+		se = sd(x) / sqrt(length(x)))
+}
+
 # Generate graph and calculate network metrics
 mets <- foreach(i = seq_along(edgeLs)) %dopar% {
 	# Aggression counts and SRI in edgeLs
