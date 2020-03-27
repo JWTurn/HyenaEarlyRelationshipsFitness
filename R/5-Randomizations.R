@@ -78,6 +78,13 @@ aggr[, aggrIndex := .I]
 
 
 # Randomization --------------------------------------------------
+# Set na action to exlude to ensure NAs in res are padded
+options(na.action = "na.exclude")
+
+range01 <- function(x) {
+	(x - min(x)) / (max(x) - min(x))
+}
+
 #randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {      # this starts at observed
 randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% {       # this starts at first iteration
 
