@@ -85,9 +85,7 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
-randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {      # this starts at observed
-#randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% {       # this starts at first iteration
-
+randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	if (iter == 0) {
 		asso[, ID := hyena]
 	} else {
