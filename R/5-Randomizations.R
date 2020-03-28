@@ -28,8 +28,8 @@ groupCol <- 'group'
 idCol <- 'ID'
 
 ## Iterations
-set.seed(13)
-iterations <- 1000
+set.seed(53)
+iterations <- 1
 
 
 ### Count edges ----
@@ -85,8 +85,8 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
-#randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {      # this starts at observed
-randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% {       # this starts at first iteration
+randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %dopar% {      # this starts at observed
+#randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% {       # this starts at first iteration
 
 	if (iter == 0) {
 		asso[, ID := hyena]
@@ -329,11 +329,11 @@ randMets <- foreach(iter = seq(1, iterations), .errorhandling = 'pass') %dopar% 
 
 out <- rbindlist(randMets[unlist(lapply(randMets, function(x) !is.null(ncol(x))))])
 
-#out[iteration == 0, observed := TRUE]
+out[iteration == 0, observed := TRUE]
 out[iteration != 0, observed := FALSE]
 #out <- out[iteration != 0]
 
 ### Output ----
-saveRDS(out, paste0(derived, 'observed-random-metrics_e.Rds'))
+saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
 
 out[, uniqueN(iteration)]

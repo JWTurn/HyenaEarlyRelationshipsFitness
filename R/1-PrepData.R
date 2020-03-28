@@ -58,7 +58,7 @@ aggr[, sessiondate := as.IDate(sessiondate)]
 aggr[, aggressiontime := as.ITime(aggressiontime)]
 
 ## Typo
-# setnames(affil, 'll_reciever', 'll_receiver')
+setnames(affil, 'll_reciever', 'll_receiver')
 
 ### Output ----
 # Output to derived-data
