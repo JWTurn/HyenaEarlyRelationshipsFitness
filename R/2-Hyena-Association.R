@@ -66,9 +66,9 @@ mets <- foreach(n = seq_along(sriLs)) %dopar% {
 
 	w <- E(g)$weight
 	cbind(data.table(
-		twi_degree = degree(g),
-		twi_strength = strength(g, weights = w),
-		twi_betweenness = betweenness(g, directed = FALSE, weights = 1/w),
+		sri_degree = degree(g),
+		sri_strength = strength(g, weights = w),
+		sri_betweenness = betweenness(g, directed = FALSE, weights = 1/w),
 		ID = names(degree(g))
 	), life[n])
 }
