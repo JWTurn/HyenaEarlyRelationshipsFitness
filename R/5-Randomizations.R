@@ -85,7 +85,9 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
-randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
+
+randMets <- foreach(iter = seq(0, iterations), .verbose = TRUE) %do% {
+	print(iter)
 	if (iter == 0) {
 		asso[, ID := hyena]
 	} else {
@@ -94,7 +96,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	}
 
 	## Count sessions ----------------------------------------------
-	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life))) %do% {
+	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
@@ -133,7 +135,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	}
 
 	# Count matching edges
-	countLs <- foreach(i = seq(1, nrow(life))) %do% {
+	countLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		focal <- randAffil[life[i],
 									 on = .(sessiondate >= period_start,
 									 			 sessiondate < period_end)]
@@ -168,7 +170,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	}
 
 	#  average of behavior1 during period
-	avgLs <- foreach(i = seq(1, nrow(life))) %do% {
+	avgLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		focal <- randAggr[life[i],
 									on = .(sessiondate >= period_start,
 												 sessiondate < period_end)]
@@ -181,7 +183,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 
 	## Association -------------------------------------------------
 	# Generate a GBI for each ego's life stage
-	gbiLs <- foreach(i = seq(1, nrow(life))) %do% {
+	gbiLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
@@ -192,19 +194,19 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	}
 
 	# Calculate SRI
-	sriLs <- foreach(g = gbiLs) %do% {
+	sriLs <- foreach(g = gbiLs, .verbose = TRUE) %do% {
 		get_network(g, 'GBI', 'SRI')
 	}
 
 	## Combine edges, make graphs  -------------------------------------
 	# Associations
-	assoGraphs <- foreach(i = seq(1, nrow(life))) %do% {
+	assoGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		graph.adjacency(sriLs[[i]], 'undirected',
 										diag = FALSE, weighted = TRUE)
 	}
 
 	# Affiliations
-	affilGraphs <- foreach(i = seq(1, nrow(life))) %do% {
+	affilGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		# Melt SRI matrix to a three column data.table
 		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
@@ -215,7 +217,8 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 
 		# Merge SRI onto affiliation data
 		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)[sri != 0]
-
+		# print(sub[, all(0 <= affilRate & affilRate <= 1)])
+		# print(sub[, all(0 <= sri & sri <= 1)])
 		# Calculate residuals from affiliation rate ~ SRI
 		sub[, res := residuals(glm(affilRate ~ sri, family = 'binomial'),
 													 type = 'deviance')]
@@ -234,7 +237,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 	}
 
 	# Aggressions
-	aggrGraphs <- foreach(i = seq(1, nrow(life))) %do% {
+	aggrGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		# Melt SRI matrix to a three column data.table
 		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
@@ -246,7 +249,8 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 		# Merge SRI onto aggression data
 		sub <- merge(avgLs[[i]], melted, by = c('aggressor', 'recip'), all.x = TRUE)[
 			sri != 0 & (sri / avgB1) != 0]
-
+		# print(sub[, all(0 <= avgB1Len & avgB1Len <= 1)])
+		# print(sub[, all(0 <= sri & sri <= 1)])
 
 		# Calculate residuals from average of behavior1 during period ~ SRI
 		sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
@@ -264,9 +268,10 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 
 		return(g)
 	}
+	print("mets")
 
 	## Return network metrics ---------------------------------
-	mets <- foreach(i = seq(1, nrow(life))) %do% {
+	mets <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
 		affilG <- affilGraphs[[i]]
 		aggrG <- aggrGraphs[[i]]
 		assoG <- assoGraphs[[i]]
@@ -274,6 +279,7 @@ randMets <- foreach(iter = seq(0, iterations), .errorhandling = 'pass') %do% {
 		ego <- life$ego[[i]]
 
 		w <- E(assoG)$weight
+		print(all(0 <= w & w <= 1))
 		assoMets <- data.table(
 			sri_degree = degree(assoG),
 			sri_strength = strength(assoG),
@@ -332,6 +338,6 @@ out[iteration != 0, observed := FALSE]
 #out <- out[iteration != 0]
 
 ### Output ----
-saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
-
-out[, uniqueN(iteration)]
+# saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
+#
+# out[, uniqueN(iteration)]
