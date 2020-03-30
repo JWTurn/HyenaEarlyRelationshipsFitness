@@ -36,8 +36,8 @@ countLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 								 			 sessiondate < period_end)]
 
 	focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
-	focal[, .(ll_receiver, ll_solicitor, period_length,
-						N, affilRate = N / period_length)]
+	unique(focal[, .(ll_receiver, ll_solicitor, period_length,
+						N, affilRate = N / period_length)])
 }
 
 # Generate a GBI for each ego's life stage
