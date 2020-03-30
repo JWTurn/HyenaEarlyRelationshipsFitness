@@ -34,8 +34,10 @@ avgLs <- foreach(i = seq(1, nrow(life))) %dopar% {
 	focal <- aggr[life[i],
 								 on = .(sessiondate >= period_start,
 								 			 sessiondate < period_end)]
-	focal[, .(avgB1 = mean(behavior1), avgB1Len = mean(behavior1) / period_length,
-						period_length = period_length[[1]]), by = .(aggressor, recip)]
+	unique(focal[, .(avgB1 = mean(behavior1),
+						avgB1Len = mean(behavior1) / period_length,
+						period_length = period_length),
+				by = .(aggressor, recip)])
 }
 
 # Generate a GBI for each ego's life stage
