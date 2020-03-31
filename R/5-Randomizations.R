@@ -227,7 +227,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		# Merge SRI onto affiliation data
 		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)[sri != 0]
 		# Calculate residuals from affiliation rate ~ SRI
-		sub[, res := residuals(glm(affilRate ~ sri),
+		sub[, res := residuals(glm(affilRate ~ sri), family = 'binomial',
 													 type = 'deviance')]
 
 		sub[, res01 := range01(res)]
