@@ -136,15 +136,8 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		}
 
 		# Count matching edges
-		#####################
-		# TODO: why sessiondate.1
-		# up to here
-		countLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-			focal <- randAffil[life[i],
-												 on = .(sessiondate >= period_start,
-												 			 sessiondate < period_end)]
-			focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
-
+		countLs <- foreach(i = seqlife) %do% {
+			focal <- randAffilLs[[i]]
 			focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
 			unique(focal[, .(ll_receiver,
 											 ll_solicitor,
@@ -152,7 +145,6 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 											 N,
 											 affilRate = N / period_length)])
 		}
-
 
 	}
 })
