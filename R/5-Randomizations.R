@@ -85,7 +85,7 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
-seqlife <- seq(1, nrow(life))
+seqlife <- seq.int(length.out = nrow(life))
 
 randMets <- lapply(seq(0, iterations), function(iter) {
 	# Within ego stages, randomize association data
