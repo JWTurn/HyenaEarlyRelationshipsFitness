@@ -87,7 +87,6 @@ range01 <- function(x) {
 
 randMets <- lapply(seq(0, iterations), function(iter) {
 # randMets <- foreach(iter = seq(0, iterations), .verbose = TRUE) %do% {
-	print(iter)
 	if (iter == 0) {
 		asso[, ID := hyena]
 	} else {
@@ -96,7 +95,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	## Count sessions ----------------------------------------------
-	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life))) %do% {
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
@@ -142,15 +141,19 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 
 		focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
-		focal[, .(ll_receiver, ll_solicitor, period_length,
-							N, affilRate = N / period_length)]
+		unique(focal[, .(ll_receiver,
+										 ll_solicitor,
+										 period_length,
+										 N,
+										 affilRate = N / period_length)])
 	}
 
 	## Aggression -------------------------------------------------
 	# Merge aggression and association
 	DT <- merge(
 		aggr, asso,
-		by = 'session', allow.cartesian = TRUE
+		by = c('session', 'sessiondate'),
+		allow.cartesian = TRUE
 	)
 
 	# Match the sessiondates/yrs to association data
