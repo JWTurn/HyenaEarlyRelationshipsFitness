@@ -120,24 +120,27 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 
 	## Affiliation -------------------------------------------------
 	# Merge affiliation and association
-	DT <- merge(
-		affil, asso,
-		by = c('session', 'sessiondate', 'yr'),
-		all.x = TRUE
-	)
-
-	# Set output names of left and right randomized IDs
-	nms <- c('ll_receiver', 'll_solicitor')
-
-	if (iter == 0) {
-		randAffil <- DT
-	} else {
-		# Randomize affiliation data
-		randAffil <- randomizations.directed(
-			DT, id = 'ID', count = 'countAffil',
-			by = 'session', nms = nms
+	randAffilLs <- foreach(i = seqlife) %do% {
+		DT <- merge(
+			affil, subLs[[i]],
+			by.x = c('session', 'sessiondate', 'yr'),
+			by.y = c('session', 'sessiondatecopy', 'yr')
 		)
+
+		# Set output names of left and right randomized IDs
+		# nms <- c('ll_receiver', 'll_solicitor')
+
+		# if (iter == 0) {
+		# 	randAffil <- DT
+		# } else {
+		# 	# Randomize affiliation data
+		# 	randAffil <- randomizations.directed(
+		# 		DT, id = 'ID', count = 'countAffil',
+		# 		by = 'session', nms = nms
+		# 	)
+		# }
 	}
+})
 
 	# Count matching edges
 	#####################
@@ -341,14 +344,14 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		if (nrow(assoMets) == 0) {
 			assoMets <- assoMets[NA]
 		}
-#
-# 		if (nrow(affilMets) == 0) {
-# 			affilMets <- affilMets[NA]
-# 		}
-#
-# 		if (nrow(aggrMets) == 0) {
-# 			aggrMets <- aggrMets[NA]
-# 		}
+		#
+		# 		if (nrow(affilMets) == 0) {
+		# 			affilMets <- affilMets[NA]
+		# 		}
+		#
+		# 		if (nrow(aggrMets) == 0) {
+		# 			aggrMets <- aggrMets[NA]
+		# 		}
 
 		# TODO: alternative to cbind that handles that NA better
 		cbind(life[i], assoMets)#, affilMets, aggrMets)
