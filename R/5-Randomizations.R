@@ -69,6 +69,7 @@ range01 <- function(x) {
 }
 
 affilnms <- c('ll_receiver', 'll_solicitor')
+aggrnms <- c('aggressor', 'recip')
 
 seqlife <- seq.int(length.out = nrow(life))
 
