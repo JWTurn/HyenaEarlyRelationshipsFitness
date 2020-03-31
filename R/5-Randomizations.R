@@ -245,7 +245,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	# Aggressions
-	aggrGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+	aggrGraphs <- foreach(i = seqlife) %do% {
 		# Melt SRI matrix to a three column data.table
 		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
@@ -276,7 +276,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	## Return network metrics ---------------------------------
-	mets <- foreach(i = seqlife, .verbose = TRUE) %do% {
+	mets <- foreach(i = seqlife) %do% {
 		affilG <- affilGraphs[[i]]
 		aggrG <- aggrGraphs[[i]]
 		assoG <- assoGraphs[[i]]
