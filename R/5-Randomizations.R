@@ -85,9 +85,11 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
+seqlife <- seq(1, nrow(life))
+
 randMets <- lapply(seq(0, iterations), function(iter) {
 	# Within ego stages, randomize association data
-	subLs <- foreach(i = seq(1, nrow(life))) %do% {
+	subLs <- foreach(i = seqlife) %do% {
 		# Sub association data to ego stage
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
@@ -102,7 +104,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	## Count sessions ----------------------------------------------
-	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life))) %do% {
+	nseshLs <- rbindlist(foreach(i = seqlife) %do% {
 		sub <- subLs[[i]]
 		ego <- sub$ego[[i]]
 		period <- sub$period[[i]]
@@ -144,10 +146,10 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	# why not do a randAffil with id to random id merge
 	# and same for randAggr
 
-	countLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	countLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
 		focal <- randAffil[life[i],
-									 on = .(sessiondate >= period_start,
-									 			 sessiondate < period_end)]
+											 on = .(sessiondate >= period_start,
+											 			 sessiondate < period_end)]
 		focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
 
 		focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
@@ -183,10 +185,10 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	#  average of behavior1 during period
-	avgLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	avgLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
 		focal <- randAggr[life[i],
-									on = .(sessiondate >= period_start,
-												 sessiondate < period_end)]
+											on = .(sessiondate >= period_start,
+														 sessiondate < period_end)]
 		focal[, .(avgB1 = mean(behavior1),
 							avgB1Len = mean(behavior1) / period_length,
 							period_length = period_length[[1]]),
@@ -197,7 +199,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	## Association -------------------------------------------------
 	# TODO: this should be randomized.. ?
 	# Generate a GBI for each ego's life stage
-	gbiLs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	gbiLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
@@ -215,15 +217,15 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	## Combine edges, make graphs  -------------------------------------
 	# Associations
 	print('asso')
-	assoGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	assoGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
 		graph.adjacency(sriLs[[i]], 'undirected',
 										diag = FALSE, weighted = TRUE)
 	}
 
 	# Affiliations
 	# print('affil')
-	# affilGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
-	# affilGraphs <- lapply(seq(1, nrow(life)), function(i) {
+	# affilGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+	# affilGraphs <- lapply(seqlife, function(i) {
 	# # TODO: loop to check range of y var
 	# 	# Melt SRI matrix to a three column data.table
 	# 	melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
@@ -256,10 +258,10 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	# 	#
 	# 	# return(g)
 	# })
-# })
+	# })
 	# Aggressions
 	# print('aggr')
-	# aggrGraphs <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	# aggrGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
 	# 	# Melt SRI matrix to a three column data.table
 	# 	melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 	#
@@ -293,7 +295,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	# }
 	# print("mets")
 	## Return network metrics ---------------------------------
-	mets <- foreach(i = seq(1, nrow(life)), .verbose = TRUE) %do% {
+	mets <- foreach(i = seqlife, .verbose = TRUE) %do% {
 		# affilG <- affilGraphs[[i]]
 		# aggrG <- aggrGraphs[[i]]
 		assoG <- assoGraphs[[i]]
