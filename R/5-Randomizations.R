@@ -192,6 +192,23 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 					by = .(aggressor, recip)]
 	}
 
+	## Association -------------------------------------------------
+	# Generate a GBI for each ego's life stage
+	gbiLs <- foreach(i = seqlife) %do% {
+		sub <- subLs[[i]]
+
+		# Filter out < 10
+		get_gbi(sub[get(idCol) %chin% sub[, .N, idCol][N > 10, get(idCol)]],
+						groupCol, idCol)
+	}
+
+	# Calculate SRI
+	sriLs <- foreach(g = gbiLs) %do% {
+		get_network(g, 'GBI', 'SRI')
+	}
+
+
+
 })
 
 
