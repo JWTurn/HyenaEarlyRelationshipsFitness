@@ -101,26 +101,37 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 
 
 	## Affiliation -------------------------------------------------
-	# Merge affiliation and association
+	# Randomize affiliations
 	randAffilLs <- foreach(i = seqlife) %do% {
-		DT <- merge(
-			affil, subLs[[i]],
-			by.x = c('session', 'sessiondate', 'yr'),
-			by.y = c('session', 'sessiondatecopy', 'yr')
-		)
+		# Sub affiliations w/i ego period
+		subAffil <- affil[life[i],
+											on = .(sessiondate >= period_start,
+														 sessiondate < period_end)]
 
-		# Set output names of left and right randomized IDs
-		# nms <- c('ll_receiver', 'll_solicitor')
+		# Collect all the individuals * sessiondate
+		iddate <- subLs[[i]][, .(ID = unique(ID)), sessiondatecopy]
 
-		# if (iter == 0) {
-		# 	randAffil <- DT
-		# } else {
-		# 	# Randomize affiliation data
-		# 	randAffil <- randomizations.directed(
-		# 		DT, id = 'ID', count = 'countAffil',
-		# 		by = 'session', nms = nms
-		# 	)
-		# }
+		nms <- c('ll_receiver', 'll_solicitor')
+
+		# Randomize affiliation data using only IDs from each session date
+		if (iter == 0) {
+			subAffil
+		} else {
+			subAffil[, (nms) :=
+							 	{
+							 		ids <- iddate[sessiondatecopy == .BY[[1]]]$ID
+
+							 		if (length(unique(ids)) > .N) {
+							 			l <- sample(ids, size = .N, replace = TRUE)
+							 			r <- sample(ids, size = .N, replace = TRUE)
+
+							 			while (any(l == r)) {
+							 				l <- sample(ids, size = .N, replace = TRUE)
+							 				r <- sample(ids, size = .N, replace = TRUE)
+							 			}
+							 		}
+							 	}, by = sessiondatecopy]
+		}
 	}
 })
 
