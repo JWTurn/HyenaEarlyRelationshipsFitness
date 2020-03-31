@@ -114,11 +114,9 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	# Merge affiliation and association
 	DT <- merge(
 		affil, asso,
-		by = 'session', allow.cartesian = TRUE
+		by = c('session', 'sessiondate', 'yr'),
+		allow.cartesian = TRUE
 	)
-
-	# Match the sessiondates/yrs to association data
-	DT[, c('sessiondate', 'yr') := .(sessiondate.y, yr.y)]
 
 	# Set output names of left and right randomized IDs
 	nms <- c('ll_receiver', 'll_solicitor')
@@ -152,12 +150,12 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	# Merge aggression and association
 	DT <- merge(
 		aggr, asso,
-		by = c('session', 'sessiondate'),
+		by = c('session', 'sessiondate', 'yr'),
 		allow.cartesian = TRUE
 	)
 
 	# Match the sessiondates/yrs to association data
-	DT[, sessiondate := sessiondate.y]
+	# DT[, sessiondate := sessiondate.y]
 
 	# Set output names of left and right randomized IDs
 	nms <- c('aggressor', 'recip')
