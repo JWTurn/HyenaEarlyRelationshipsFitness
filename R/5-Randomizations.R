@@ -207,6 +207,41 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		get_network(g, 'GBI', 'SRI')
 	}
 
+	## Combine edges, make graphs  -------------------------------------
+	# Associations
+	assoGraphs <- foreach(i = seqlife) %do% {
+		graph.adjacency(sriLs[[i]], 'undirected',
+										diag = FALSE, weighted = TRUE)
+	}
+
+	# Affiliations
+	affilGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+		# Melt SRI matrix to a three column data.table
+		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
+
+		melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+
+		# Setnames
+		setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
+
+		# Merge SRI onto affiliation data
+		sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)[sri != 0]
+		# Calculate residuals from affiliation rate ~ SRI
+		sub[, res := residuals(glm(affilRate ~ sri),
+													 type = 'deviance')]
+
+		sub[, res01 := range01(res)]
+
+		# Generate the graph
+		g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
+															 directed = TRUE)
+
+		# Set edge weight to residuals
+		w <- sub$res01
+		E(g)$weight <- w
+
+		return(g)
+	}
 
 
 })
@@ -216,51 +251,9 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 
 
 
-	## Combine edges, make graphs  -------------------------------------
-	# Associations
-	print('asso')
-	assoGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-		graph.adjacency(sriLs[[i]], 'undirected',
-										diag = FALSE, weighted = TRUE)
-	}
 
-	# Affiliations
-	# print('affil')
-	# affilGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-	# affilGraphs <- lapply(seqlife, function(i) {
-	# # TODO: loop to check range of y var
-	# 	# Melt SRI matrix to a three column data.table
-	# 	melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
-	#
-	# 	melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	#
-	# 	# Setnames
-	# 	setnames(melted, c('id1', 'variable', 'value'), c('ll_receiver', 'll_solicitor', 'sri'))
-	#
-	# 	# Merge SRI onto affiliation data
-	# 	sub <- merge(countLs[[i]], melted, by = c('ll_receiver', 'll_solicitor'), all.x = TRUE)[sri != 0]
-	# 	# print(sub[, all(0 <= affilRate & affilRate <= 1)])
-	# 	# print(sub[, all(0 <= sri & sri <= 1)])
-	# 	# Calculate residuals from affiliation rate ~ SRI
-	#
-	# 	cbind(sub[affilRate > 1], i)
-	#
-	# 	# sub[, res := residuals(glm(affilRate ~ sri),
-	# 	# 											 type = 'deviance')]
-	# 	#
-	# 	# sub[, res01 := range01(res)]
-	# 	#
-	# 	# # Generate the graph
-	# 	# g <- graph_from_data_frame(sub[, .(ll_solicitor, ll_receiver)],
-	# 	# 													 directed = TRUE)
-	# 	#
-	# 	# # Set edge weight to residuals
-	# 	# w <- sub$res01
-	# 	# E(g)$weight <- w
-	# 	#
-	# 	# return(g)
-	# })
-	# })
+
+
 	# Aggressions
 	# print('aggr')
 	# aggrGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
