@@ -215,7 +215,8 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	# Affiliations
-	affilGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+	# TODO: loop to check range of y var
+	affilGraphs <- foreach(i = seqlife) %do% {
 		# Melt SRI matrix to a three column data.table
 		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
 
@@ -243,62 +244,47 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		return(g)
 	}
 
-
-})
-
-
-
-
-
-
-
-
-
 	# Aggressions
-	# print('aggr')
-	# aggrGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-	# 	# Melt SRI matrix to a three column data.table
-	# 	melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
-	#
-	# 	melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
-	#
-	# 	# Setnames
-	# 	setnames(melted, c('id1', 'variable', 'value'), c('aggressor', 'recip', 'sri'))
-	#
-	# 	# Merge SRI onto aggression data
-	# 	sub <- merge(avgLs[[i]], melted, by = c('aggressor', 'recip'), all.x = TRUE)[
-	# 		sri != 0 & (sri / avgB1) != 0]
-	# 	# print(sub[, all(0 <= avgB1Len & avgB1Len <= 1)])
-	# 	# print(sub[, all(0 <= sri & sri <= 1)])
-	#
-	# 	# Calculate residuals from average of behavior1 during period ~ SRI
-	# 	# TODO: check for binomial here
-	# 	sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
-	# 												 type = 'deviance')]
-	#
-	# 	sub[, res01 := range01(res)]
-	#
-	# 	# Generate the graph
-	# 	g <- graph_from_data_frame(sub[, .(aggressor, recip)],
-	# 														 directed = TRUE)
-	#
-	# 	# Set edge weight to residuals
-	# 	w <- sub$res01
-	# 	E(g)$weight <- w
-	#
-	# 	return(g)
-	# }
-	# print("mets")
+	aggrGraphs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+		# Melt SRI matrix to a three column data.table
+		melted <- melt(as.data.table(sriLs[[i]], keep.rownames = 'id1'), id.vars = 'id1')
+
+		melted[, c('id1', 'variable') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+
+		# Setnames
+		setnames(melted, c('id1', 'variable', 'value'), c('aggressor', 'recip', 'sri'))
+
+		# Merge SRI onto aggression data
+		sub <- merge(avgLs[[i]], melted, by = c('aggressor', 'recip'), all.x = TRUE)[
+			sri != 0 & (sri / avgB1) != 0]
+
+		# Calculate residuals from average of behavior1 during period ~ SRI
+		sub[, res := residuals(glm(avgB1Len ~ sri, family = 'binomial'),
+													 type = 'deviance')]
+
+		sub[, res01 := range01(res)]
+
+		# Generate the graph
+		g <- graph_from_data_frame(sub[, .(aggressor, recip)],
+															 directed = TRUE)
+
+		# Set edge weight to residuals
+		w <- sub$res01
+		E(g)$weight <- w
+
+		return(g)
+	}
+
 	## Return network metrics ---------------------------------
 	mets <- foreach(i = seqlife, .verbose = TRUE) %do% {
-		# affilG <- affilGraphs[[i]]
-		# aggrG <- aggrGraphs[[i]]
+		affilG <- affilGraphs[[i]]
+		aggrG <- aggrGraphs[[i]]
 		assoG <- assoGraphs[[i]]
 
 		ego <- life$ego[[i]]
 
 		w <- E(assoG)$weight
-		# print(all(0 <= w & w <= 1))
+
 		assoMets <- data.table(
 			sri_degree = degree(assoG),
 			sri_strength = strength(assoG),
@@ -306,46 +292,45 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 			ID = names(degree(assoG))
 		)[ID == ego]
 
-		# w <- E(affilG)$weight
-		# affilMets <- data.table(
-		# 	affil_degree = degree(affilG, mode = 'total'),
-		# 	affil_outdegree = degree(affilG, mode = 'out'),
-		# 	affil_indegree = degree(affilG, mode = 'in'),
-		# 	affil_strength = strength(affilG, mode = 'total' ,weights = w),
-		# 	affil_outstrength = strength(affilG, mode = 'out', weights = w),
-		# 	affil_instrength = strength(affilG, mode = 'in', weights = w),
-		# 	affil_betweenness = betweenness(affilG, directed = TRUE, weights = 1/w),
-		# 	ID = names(degree(affilG))
-		# )[ID == ego]
+		w <- E(affilG)$weight
+		affilMets <- data.table(
+			affil_degree = degree(affilG, mode = 'total'),
+			affil_outdegree = degree(affilG, mode = 'out'),
+			affil_indegree = degree(affilG, mode = 'in'),
+			affil_strength = strength(affilG, mode = 'total' ,weights = w),
+			affil_outstrength = strength(affilG, mode = 'out', weights = w),
+			affil_instrength = strength(affilG, mode = 'in', weights = w),
+			affil_betweenness = betweenness(affilG, directed = TRUE, weights = 1/w),
+			ID = names(degree(affilG))
+		)[ID == ego]
 
-		# w <- E(aggrG)$weight
-		# aggrMets <- data.table(
-		# 	aggr_degree = degree(aggrG, mode = 'total'),
-		# 	aggr_outdegree = degree(aggrG, mode = 'out'),
-		# 	aggr_indegree = degree(aggrG, mode = 'in'),
-		# 	aggr_strength = strength(aggrG, mode = 'total', weights = w),
-		# 	aggr_outstrength = strength(aggrG, mode = 'out', weights = w),
-		# 	aggr_instrength = strength(aggrG, mode = 'in', weights = w),
-		# 	aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = 1/w),
-		# 	ID = names(degree(aggrG))
-		# )[ID == ego]
+		w <- E(aggrG)$weight
+		aggrMets <- data.table(
+			aggr_degree = degree(aggrG, mode = 'total'),
+			aggr_outdegree = degree(aggrG, mode = 'out'),
+			aggr_indegree = degree(aggrG, mode = 'in'),
+			aggr_strength = strength(aggrG, mode = 'total', weights = w),
+			aggr_outstrength = strength(aggrG, mode = 'out', weights = w),
+			aggr_instrength = strength(aggrG, mode = 'in', weights = w),
+			aggr_betweenness = betweenness(aggrG, directed = TRUE, weights = 1/w),
+			ID = names(degree(aggrG))
+		)[ID == ego]
 
 
 		# If no rows, fill columns with NA
 		if (nrow(assoMets) == 0) {
 			assoMets <- assoMets[NA]
 		}
-		#
-		# 		if (nrow(affilMets) == 0) {
-		# 			affilMets <- affilMets[NA]
-		# 		}
-		#
-		# 		if (nrow(aggrMets) == 0) {
-		# 			aggrMets <- aggrMets[NA]
-		# 		}
 
-		# TODO: alternative to cbind that handles that NA better
-		cbind(life[i], assoMets)#, affilMets, aggrMets)
+		if (nrow(affilMets) == 0) {
+			affilMets <- affilMets[NA]
+		}
+
+		if (nrow(aggrMets) == 0) {
+			aggrMets <- aggrMets[NA]
+		}
+
+		cbind(life[i], assoMets, affilMets, aggrMets)
 	}
 	rbindlist(mets)[nseshLs, on = c('ID', 'period'), all = TRUE][, iteration := iter]
 })
