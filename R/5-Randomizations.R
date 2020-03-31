@@ -329,19 +329,16 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		if (nrow(aggrMets) == 0) {
 			aggrMets <- aggrMets[NA]
 		}
-
-		cbind(life[i], assoMets, affilMets, aggrMets)
+		ls <- list(life[i], assoMets, affilMets, aggrMets)
+		Reduce(merge, ls)
 	}
 	rbindlist(mets)[nseshLs, on = c('ID', 'period'), all = TRUE][, iteration := iter]
 })
 
-out <- rbindlist(randMets[unlist(lapply(randMets, function(x) !is.null(ncol(x))))])
+out <- rbindlist(randMets)
 
 out[iteration == 0, observed := TRUE]
 out[iteration != 0, observed := FALSE]
-#out <- out[iteration != 0]
 
 ### Output ----
 # saveRDS(out, paste0(derived, 'observed-random-metrics.Rds'))
-#
-# out[, uniqueN(iteration)]
