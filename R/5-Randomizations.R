@@ -149,66 +149,55 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 	}
 
 	## Aggression -------------------------------------------------
-	# Merge aggression and association
-	DT <- merge(
-		aggr, asso,
-		by = c('session', 'sessiondate', 'yr'),
-		allow.cartesian = TRUE
-	)
-
-	# Match the sessiondates/yrs to association data
-	# DT[, sessiondate := sessiondate.y]
-
-	# Set output names of left and right randomized IDs
-	nms <- c('aggressor', 'recip')
-
-	if (iter == 0) {
-		randAggr <- DT
-	} else {
-		# Randomize aggression data
-		randAggr <- randomizations.directed(
-			DT, id = 'ID', count = 'countAggr',
-			by = 'session', nms = nms
-		)
-	}
-
-	#  average of behavior1 during period
-	avgLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-		focal <- randAggr[life[i],
+	# Randomize aggressions
+	randAggrLs <- foreach(i = seqlife) %do% {
+		# Sub aggressions w/i ego period
+		subAggr <- aggr[life[i],
 											on = .(sessiondate >= period_start,
 														 sessiondate < period_end)]
+
+		# Collect all the individuals * sessiondate
+		iddate <- subLs[[i]][, .(ID = unique(ID)), sessiondatecopy]
+
+		# Randomize aggression data using only IDs from each session date
+		# TODO: check if replace = TRUE
+		if (iter == 0) {
+			subAggr
+		} else {
+			subAggr[, (aggrnms) :=
+							 	{
+							 		ids <- iddate[sessiondatecopy == .BY[[1]]]$ID
+
+							 		if (length(ids) > .N) {
+							 			l <- sample(ids, size = .N, replace = TRUE)
+							 			r <- sample(ids, size = .N, replace = TRUE)
+
+							 			while (any(l == r)) {
+							 				l <- sample(ids, size = .N, replace = TRUE)
+							 				r <- sample(ids, size = .N, replace = TRUE)
+							 			}
+							 			list(l, r)
+							 		}
+							 	}, by = sessiondatecopy]
+		}
+	}
+
+	# Average of behavior1 during period
+	# TODO: do we need aggrIndex?
+	avgLs <- foreach(i = seqlife) %do% {
+		focal <- randAggrLs[[i]]
 		focal[, .(avgB1 = mean(behavior1),
 							avgB1Len = mean(behavior1) / period_length,
 							period_length = period_length[[1]]),
 					by = .(aggressor, recip)]
 	}
-	# TODO: do we need aggrIndex?
 
-
-
-	}
 })
 
 
 
 
-	## Association -------------------------------------------------
-	# TODO: this should be randomized.. ?
-	# Generate a GBI for each ego's life stage
-	gbiLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-		sub <- asso[life[i],
-								on = .(sessiondate >= period_start,
-											 sessiondate < period_end)]
 
-		# Filter out < 10
-		get_gbi(sub[get(idCol) %chin% sub[, .N, idCol][N > 10, get(idCol)]],
-						groupCol, idCol)
-	}
-
-	# Calculate SRI
-	sriLs <- foreach(g = gbiLs, .verbose = TRUE) %do% {
-		get_network(g, 'GBI', 'SRI')
-	}
 
 	## Combine edges, make graphs  -------------------------------------
 	# Associations
