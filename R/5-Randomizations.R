@@ -330,7 +330,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 			aggrMets <- aggrMets[NA]
 		}
 		ls <- list(life[i], assoMets, affilMets, aggrMets)
-		Reduce(merge, ls)
+		Reduce(function(x, y) merge(x, y, by = 'ID', all = TRUE), ls)
 	}
 	rbindlist(mets)[nseshLs, on = c('ID', 'period'), all = TRUE][, iteration := iter]
 })
