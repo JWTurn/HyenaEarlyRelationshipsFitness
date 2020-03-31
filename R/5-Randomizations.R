@@ -103,9 +103,7 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 
 	## Count sessions ----------------------------------------------
 	nseshLs <- rbindlist(foreach(i = seq(1, nrow(life))) %do% {
-		sub <- asso[life[i],
-								on = .(sessiondate >= period_start,
-											 sessiondate < period_end)]
+		sub <- subLs[[i]]
 		ego <- sub$ego[[i]]
 		period <- sub$period[[i]]
 
