@@ -134,22 +134,18 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 							 		}
 							 	}, by = sessiondatecopy]
 		}
-
-		# Count matching edges
-		countLs <- foreach(i = seqlife) %do% {
-			focal <- randAffilLs[[i]]
-			focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
-			unique(focal[, .(ll_receiver,
-											 ll_solicitor,
-											 period_length,
-											 N,
-											 affilRate = N / period_length)])
-		}
-
 	}
-})
 
-
+	# Count matching edges
+	countLs <- foreach(i = seqlife) %do% {
+		focal <- randAffilLs[[i]]
+		focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
+		unique(focal[, .(ll_receiver,
+										 ll_solicitor,
+										 period_length,
+										 N,
+										 affilRate = N / period_length)])
+	}
 
 	## Aggression -------------------------------------------------
 	# Merge aggression and association
@@ -186,6 +182,14 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 					by = .(aggressor, recip)]
 	}
 	# TODO: do we need aggrIndex?
+
+
+
+	}
+})
+
+
+
 
 	## Association -------------------------------------------------
 	# TODO: this should be randomized.. ?
