@@ -86,28 +86,19 @@ range01 <- function(x) {
 }
 
 randMets <- lapply(seq(0, iterations), function(iter) {
-# randMets <- foreach(iter = seq(0, iterations), .verbose = TRUE) %do% {
-
-
+	# Within ego stages, randomize association data
 	subLs <- foreach(i = seq(1, nrow(life))) %do% {
+		# Sub association data to ego stage
 		sub <- asso[life[i],
 								on = .(sessiondate >= period_start,
 											 sessiondate < period_end)]
 
+		# If iteration != 0, randomize association IDs
 		if (iter == 0) {
-			asso[, randomID := hyena]
+			sub[, ID := hyena]
 		} else {
-			# Randomize association IDs
-			asso[, randomID := sample(hyena)]
+			sub[, ID := sample(hyena)]
 		}
-		ego <- sub$ego[[i]]
-		period <- sub$period[[i]]
-
-		uasso <- unique(sub[, .(ID, session)])
-		uasso[, nSession := .N, session]
-		nsesh <- uasso[, .(nSession = .N, nAlone = sum(nSession == 1), period),
-									 by = ID]
-		return(nsesh[ID == ego])
 	}
 
 	## Count sessions ----------------------------------------------
