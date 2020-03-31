@@ -38,6 +38,7 @@ affil[, countAffil := .N, session]
 
 # Count the number of individuals associating in each session
 asso[, countAsso := .N, session]
+asso[, sessiondatecopy := sessiondate]
 
 # Count the number of aggressions (edges) in each session
 aggr[, countAggr := .N, session]
