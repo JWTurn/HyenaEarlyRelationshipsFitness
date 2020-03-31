@@ -68,6 +68,8 @@ range01 <- function(x) {
 	(x - min(x)) / (max(x) - min(x))
 }
 
+affilnms <- c('ll_receiver', 'll_solicitor')
+
 seqlife <- seq.int(length.out = nrow(life))
 
 randMets <- lapply(seq(0, iterations), function(iter) {
