@@ -113,17 +113,16 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 		# Collect all the individuals * sessiondate
 		iddate <- subLs[[i]][, .(ID = unique(ID)), sessiondatecopy]
 
-		nms <- c('ll_receiver', 'll_solicitor')
-
 		# Randomize affiliation data using only IDs from each session date
+		# TODO: check if replace = TRUE
 		if (iter == 0) {
 			subAffil
 		} else {
-			subAffil[, (nms) :=
+			subAffil[, (affilnms) :=
 							 	{
 							 		ids <- iddate[sessiondatecopy == .BY[[1]]]$ID
 
-							 		if (length(unique(ids)) > .N) {
+							 		if (length(ids) > .N) {
 							 			l <- sample(ids, size = .N, replace = TRUE)
 							 			r <- sample(ids, size = .N, replace = TRUE)
 
@@ -131,33 +130,34 @@ randMets <- lapply(seq(0, iterations), function(iter) {
 							 				l <- sample(ids, size = .N, replace = TRUE)
 							 				r <- sample(ids, size = .N, replace = TRUE)
 							 			}
+						 			list(l, r)
 							 		}
 							 	}, by = sessiondatecopy]
 		}
+
+		# Count matching edges
+		#####################
+		# TODO: why sessiondate.1
+		# up to here
+		countLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
+			focal <- randAffil[life[i],
+												 on = .(sessiondate >= period_start,
+												 			 sessiondate < period_end)]
+			focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
+
+			focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
+			unique(focal[, .(ll_receiver,
+											 ll_solicitor,
+											 period_length,
+											 N,
+											 affilRate = N / period_length)])
+		}
+
+
 	}
 })
 
-	# Count matching edges
-	#####################
-	# TODO: why sessiondate.1
-	# up to here
 
-	# why not do a randAffil with id to random id merge
-	# and same for randAggr
-
-	countLs <- foreach(i = seqlife, .verbose = TRUE) %do% {
-		focal <- randAffil[life[i],
-											 on = .(sessiondate >= period_start,
-											 			 sessiondate < period_end)]
-		focal[, c('sessiondate', 'yr') := .(sessiondate.x, yr.x)]
-
-		focal[, N := .N, by = .(ll_receiver, ll_solicitor)]
-		unique(focal[, .(ll_receiver,
-										 ll_solicitor,
-										 period_length,
-										 N,
-										 affilRate = N / period_length)])
-	}
 
 	## Aggression -------------------------------------------------
 	# Merge aggression and association
