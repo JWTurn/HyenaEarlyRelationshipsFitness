@@ -45,26 +45,6 @@ asso[, sessiondatecopy := sessiondate]
 aggr[, countAggr := .N, session]
 aggr[, sessiondatecopy := sessiondate]
 
-### Directed randomizations function ----
-randomizations.directed <- function(DT, id, count, by, nms) {
-	DT[, (nms) := {
-		size <- get(count)[[1]]
-		ids <- get(id)
-
-		if (length(unique(ids)) > size) {
-			l <- sample(ids, size = size)
-			r <- sample(ids, size = size)
-
-			while (any(l == r)) {
-				l <- sample(ids, size = size)
-				r <- sample(ids, size = size)
-			}
-			list(rep(l, length.out = .N),
-					 rep(r, length.out = .N))
-		}
-	}, by = by, .SDcols = c(id, count)]
-}
-
 ### Randomize affiliation networks ----
 # Set up parallel with doParallel and foreach
 doParallel::registerDoParallel()
