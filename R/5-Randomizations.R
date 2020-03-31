@@ -35,6 +35,7 @@ iterations <- 1
 ### Count edges ----
 # Count the number of affiliations (edges) in each session
 affil[, countAffil := .N, session]
+affil[, sessiondatecopy := sessiondate]
 
 # Count the number of individuals associating in each session
 asso[, countAsso := .N, session]
@@ -42,6 +43,7 @@ asso[, sessiondatecopy := sessiondate]
 
 # Count the number of aggressions (edges) in each session
 aggr[, countAggr := .N, session]
+aggr[, sessiondatecopy := sessiondate]
 
 ### Directed randomizations function ----
 randomizations.directed <- function(DT, id, count, by, nms) {
