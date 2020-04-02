@@ -45,21 +45,7 @@ life.n <- life.n[nSession>=50]
 # To avoid the merge dropping out sessiondate to sessiondate and sessiondate.i (matching period start and end), we'll add it as an extra column and disregard those later
 asso[, idate := sessiondate]
 
-asso.2011.50 <- asso[yr==2011 & hyena %in% life.sub.2011, .(session = sample(unique(session), 50)), by = .(hyena)]
-asso.2010.50 <- asso[yr==2010 & hyena %in% life.sub.2010, .(session = sample(unique(session), 50)), by = .(hyena)]
 
-ego.50 <- rbind(asso.2010.50, asso.2011.50)
-ego.45 <- ego.50[, .(session = sample(unique(session), 45)), by = .(hyena)]
-ego.40 <- ego.45[, .(session = sample(unique(session), 40)), by = .(hyena)]
-ego.35 <- ego.40[, .(session = sample(unique(session)), 35), by = .(hyena)]
-ego.30 <- ego.35[, .(session = sample(unique(session), 30)), by = .(hyena)]
-ego.25 <- ego.30[, .(session = sample(unique(session), 25)), by = .(hyena)]
-ego.20 <- ego.25[, .(session = sample(unique(session), 20)), by = .(hyena)]
-ego.15 <- ego.20[, .(session = sample(unique(session), 15)), by = .(hyena)]
-ego.10 <- ego.15[, .(session = sample(unique(session)), 10), by = .(hyena)]
-ego.5 <- ego.10[, .(session = sample(unique(session), 5)), by = .(hyena)]
-
-asso <- asso[session %in% unique(ego.50$session)]
 
 # Generate a GBI for each ego's life stage
 gbiLs.50 <- foreach(i = seq(1, nrow(life.n))) %dopar% {
