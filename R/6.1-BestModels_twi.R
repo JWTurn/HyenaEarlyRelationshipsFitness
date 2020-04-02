@@ -64,15 +64,15 @@ sib.twins.not[,.(count=uniqueN(ego)), by=.(litrank,sex)]
 #saveRDS(mets, paste0(derived, 'observed-random-metrics_all.Rds'))
 
 mets <- readRDS(paste0(derived, 'observed-random-metrics_all.Rds'))
-
-assocols <- colnames(mets)[grepl('twi', colnames(mets))]
-affilcols <- colnames(mets)[grepl('affil', colnames(mets))]
-aggrcols <- colnames(mets)[grepl('aggr', colnames(mets))]
+#
+# assocols <- colnames(mets)[grepl('sri', colnames(mets))]
+# affilcols <- colnames(mets)[grepl('affil', colnames(mets))]
+# aggrcols <- colnames(mets)[grepl('aggr', colnames(mets))]
 
 ### Merge ----
 # Fix inconsistent periods
 egos[, period := tolower(period)]
-egos[period == 'di', period := 'postgrad']
+mets[period == 'postgrad', period := 'di']
 
 # Merge
 cols <- c('ego', 'period')
