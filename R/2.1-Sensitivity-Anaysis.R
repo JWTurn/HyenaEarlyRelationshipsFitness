@@ -16,7 +16,7 @@ asso <- readRDS(derived[grepl('prep-asso', derived)])
 # Life stages
 life <- readRDS(derived[grepl('ego-life', derived)])
 
-
+set.seed(53)
 ## Set column names
 groupCol <- 'group'
 idCol <- 'hyena'
