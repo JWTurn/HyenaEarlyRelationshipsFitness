@@ -1,6 +1,6 @@
 ### Models ====
-# Alec Robitaille
-# Started: March 28 2019
+# Julie Turner and Alec Robitaille
+# Revisions started: March 31 2020
 
 
 ### Packages ----
@@ -17,29 +17,30 @@ se <- function(x){
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
-mets <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
-
-egos <- fread(paste0(raw, 'egos_filtered.csv'))
-
-
-### Merge ----
-# Fix inconsistent periods
-egos[, period := tolower(period)]
-egos <- egos[,.(ego, period, ego_period_rank, mom, clan_size, annual_rs, longevity_years)]
-mets[period == 'postgrad', period := 'di']
-
-# Merge
-cols <- c('ego', 'period')
-setkeyv(egos, cols)
-setkeyv(mets, cols)
-
-DT <- merge(mets, egos, all.x = TRUE)
-DT[, 7:23][is.na(DT[, 7:23])] <- 0
-DT[,'alone'] <- DT$nAlone/DT$nSession
-DT <- DT[order(iteration, ego),]
+# mets <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
+#
+# egos <- fread(paste0(raw, 'egos_filtered.csv'))
+#
+#
+# ### Merge ----
+# # Fix inconsistent periods
+# egos[, period := tolower(period)]
+# egos <- egos[,.(ego, period, ego_period_rank, mom, clan_size, annual_rs, longevity_years)]
+# mets[period == 'postgrad', period := 'di']
+#
+# # Merge
+# cols <- c('ego', 'period')
+# setkeyv(egos, cols)
+# setkeyv(mets, cols)
+#
+# DT <- merge(mets, egos, all.x = TRUE)
+# DT[, 7:23][is.na(DT[, 7:23])] <- 0
+# DT[,'alone'] <- DT$nAlone/DT$nSession
+# DT <- DT[order(iteration, ego),]
 
 #saveRDS(DT, paste0(derived, 'DT_obs_rands.Rds'))
 
+DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
 
 
 # just the observed data
@@ -680,6 +681,7 @@ AIC.a.ad <- as.data.frame(AICtab(a.ad.full, a.ad.1, a.ad.2, a.ad.3, a.ad.4, a.ad
 ### Best models and randomizations ----
 #### best models for longevity CD ####
 # check the VIF of the model
+check_model(l.cd.7)
 range(vif(l.cd.7))
 summary(l.cd.7)
 
@@ -719,7 +721,7 @@ DT.lcd.7.pboth <- DT.lcd.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 
 
 
-
+check_model(l.cd.11)
 range(vif(l.cd.11))
 tidy(l.cd.11)
 
@@ -759,6 +761,7 @@ DT.lcd.11.pboth <- DT.lcd.11.p[, .(estimate = unique(estimate.obs), min = min(es
 
 
 #### best model for longevity DI ####
+check_model(l.di.7)
 range(vif(l.di.7))
 tidy(l.di.7)
 
@@ -793,7 +796,7 @@ DT.ldi.7.pboth <- DT.ldi.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 														 term]
 
 
-
+check_model(l.di.13)
 range(vif(l.di.13))
 tidy(l.di.13)
 
@@ -828,6 +831,7 @@ DT.ldi.13.pboth <- DT.ldi.13.p[, .(estimate = unique(estimate.obs), min = min(es
 														 term]
 
 #### best model for longevity Adult ####
+check_model(l.ad.7)
 range(vif(l.ad.7))
 tidy(l.ad.7)
 
@@ -866,6 +870,7 @@ DT.lad.7.pboth <- DT.lad.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 
 
 #### best models for ARS CD ####
+check_model(a.cd.7)
 range(vif(a.cd.7))
 tidy(a.cd.7)
 
@@ -903,6 +908,7 @@ DT.acd.7.pboth <- DT.acd.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 
 
 #### best models for ARS DI ####
+check_model(a.di.7)
 range(vif(a.di.7))
 tidy(a.di.7)
 
@@ -941,6 +947,7 @@ DT.adi.7.pboth <- DT.adi.7.p[, .(estimate = unique(estimate.obs), min = min(esti
 
 
 #### best models for ARS Adult ####
+check_model(a.ad.7)
 range(vif(a.ad.7))
 tidy(a.ad.7)
 
