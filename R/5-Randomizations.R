@@ -29,7 +29,7 @@ idCol <- 'ID'
 
 ## Iterations
 set.seed(53)
-iterations <- 1
+iterations <- 1000
 
 
 ### Count edges ----
