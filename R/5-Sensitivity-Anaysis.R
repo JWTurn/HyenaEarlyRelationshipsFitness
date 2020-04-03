@@ -55,7 +55,7 @@ randSesh <- foreach(i = seq(1, nrow(life.n))) %do% {
 	sub <- asso[life.n[i],
 							on = .(sessiondate >= period_start,
 										 sessiondate < period_end)]
-	sub[nhyenas >= 2 & hyena == life.n[i]$ego, .(session = sample(unique(session), 50))]
+	sub[hyena == life.n[i]$ego, .(session = sample(unique(session), 50))]
 # 	sesh.50 <- sub[, .(session = sample(unique(session), 50))]
 #   sub[session %in% sesh.50$session]
 }
