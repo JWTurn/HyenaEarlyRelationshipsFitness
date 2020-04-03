@@ -3,7 +3,7 @@
 # Revisions: April 02 2020
 
 ### Packages ----
-libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach', 'doParallel')
+libs <- c('data.table', 'spatsoc', 'asnipe', 'igraph', 'foreach', 'doParallel', 'ggplot2', 'patchwork')
 lapply(libs, require, character.only = TRUE)
 
 
@@ -189,22 +189,61 @@ comps.a.cor[,cor.test(sri_strength_10, sri_strength_50)]
 
 comps.a <- merge(comps.a.cor[.(ego, period)], mets.a, by=c('ego','period'))
 
-ggplot(comps.a, aes(nobs, sri_degree))+
-	geom_point()+
-	geom_smooth()+
-	ylim(0,69)
+pdeg <- ggplot(comps.a, aes(nobs, sri_degree))+
+	geom_point(colour = 'gray33')+
+	geom_smooth(colour = 'black')+
+	ylim(0,65)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm")) +
+	ylab("degree") + xlab("# of observations") +
+	ggtitle("A)")
+	# scale_colour_manual("", values = c("gray", "black", "gray33", 'blue'))
 
+
+pstr <- ggplot(comps.a, aes(nobs, sri_strength))+
+	geom_point(colour = 'gray33')+
+	geom_smooth(colour = 'black')+
+#	ylim(0,69)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm")) +
+	ylab("strength") + xlab("# of observations") +
+	ggtitle("B)")
+
+
+pbet <- ggplot(comps.a, aes(nobs, sri_Wbetweenness))+
+	geom_point(colour = 'gray33')+
+	geom_smooth(colour = 'black')+
+	ylim(0,125)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm")) +
+	ylab("betweenness") + xlab("# of observations") +
+	ggtitle("C)")
+
+pdeg|pstr|pbet
 
 ggplot(comps.a, aes(nobs, sri_betweenness))+
 	geom_point()+
-	geom_smooth()
-
-ggplot(comps.a, aes(nobs, sri_strength))+
-	geom_point()+
-	geom_smooth()
-
-ggplot(comps.a, aes(nobs, sri_Wbetweenness))+
-	geom_point()+
-	geom_smooth()
+	geom_smooth(colour = 'black')
 
 
