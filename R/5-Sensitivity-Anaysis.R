@@ -118,36 +118,6 @@ out <- rbindlist(nets)
 
 #saveRDS(out, 'data/derived-data/sensitivity-mets.Rds')
 
-comps <- out[hyena %in% out[nobs==5]$hyena]
-
-
-comps.cor <- dcast(comps, ego +period ~ nobs, value.var=c('sri_degree', 'sri_betweenness', 'sri_Wbetweenness', 'sri_strength'))
-comps.cor <- na.omit(comps.cor)
-
-comps.cor[,cor.test(sri_degree_5, sri_degree_10)]
-comps.cor[,cor.test(sri_degree_5, sri_degree_15)]
-comps.cor[,cor.test(sri_degree_5, sri_degree_30)]
-comps.cor[,cor.test(sri_degree_5, sri_degree_50)]
-
-comps.cor[,cor.test(sri_degree_10, sri_degree_15)]
-comps.cor[,cor.test(sri_degree_10, sri_degree_30)]
-comps.cor[,cor.test(sri_degree_10, sri_degree_50)]
-
-
-comps <- merge(comps.cor[.(ego, period)], out, by=c('ego','period'))
-
-ggplot(comps, aes(nobs, sri_degree))+
-	geom_point()+
-	geom_smooth()+
-	ylim(0,69)
-
-
-ggplot(comps, aes(nobs, sri_betweenness))+
-	geom_point()+
-	geom_smooth()+
-	ylim(0,300)
-
-
 
 mets.a <-readRDS('data/derived-data/sensitivity-metsWalone.Rds')
 metscor <- dcast(mets.a, ego +period ~ nobs, value.var=c('sri_degree', 'sri_betweenness', 'sri_Wbetweenness', 'sri_strength'))
@@ -159,6 +129,7 @@ metscor[,cor.test(sri_degree_5, sri_degree_50)]
 
 metscor[,cor.test(sri_degree_10, sri_degree_15)]
 metscor[,cor.test(sri_degree_10, sri_degree_30)]
+metscor[,cor.test(sri_degree_10, sri_degree_25)]
 metscor[,cor.test(sri_degree_10, sri_degree_50)]
 
 
@@ -189,43 +160,7 @@ comps.a <- mets.a[hyena %in% mets.a[nobs==5]$hyena]
 comps.a.cor <- dcast(comps.a, ego +period ~ nobs, value.var=c('sri_degree', 'sri_betweenness', 'sri_Wbetweenness', 'sri_strength'))
 comps.a.cor <- na.omit(comps.a.cor)
 
-comps.a.cor[,cor.test(sri_degree_5, sri_degree_10)]
-comps.a.cor[,cor.test(sri_degree_5, sri_degree_15)]
-comps.a.cor[,cor.test(sri_degree_5, sri_degree_30)]
-comps.a.cor[,cor.test(sri_degree_5, sri_degree_50)]
-
-comps.a.cor[,cor.test(sri_degree_10, sri_degree_15)]
-comps.a.cor[,cor.test(sri_degree_10, sri_degree_30)]
-comps.a.cor[,cor.test(sri_degree_10, sri_degree_50)]
-
-
-comps.a.cor[,cor.test(sri_betweenness_5, sri_betweenness_10)]
-comps.a.cor[,cor.test(sri_betweenness_5, sri_betweenness_15)]
-comps.a.cor[,cor.test(sri_betweenness_5, sri_betweenness_30)]
-comps.a.cor[,cor.test(sri_betweenness_5, sri_betweenness_50)]
-
-comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_15)]
-comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_30)]
-comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_50)]
-
-
-comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_15)]
-comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_30)]
-comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_50)]
-
-
-comps.a.cor[,cor.test(sri_strength_5, sri_strength_10)]
-comps.a.cor[,cor.test(sri_strength_5, sri_strength_15)]
-comps.a.cor[,cor.test(sri_strength_5, sri_strength_30)]
-comps.a.cor[,cor.test(sri_strength_5, sri_strength_50)]
-
-comps.a.cor[,cor.test(sri_strength_10, sri_strength_15)]
-comps.a.cor[,cor.test(sri_strength_10, sri_strength_30)]
-comps.a.cor[,cor.test(sri_strength_10, sri_strength_50)]
-
-
-
-comps.a <- merge(comps.a.cor[.(ego, period)], mets.a, by=c('ego','period'))
+comps.a <- merge(comps.a.cor[,.(ego, period)], mets.a, by=c('ego','period'))
 
 pdeg <- ggplot(comps.a, aes(nobs, sri_degree))+
 	geom_point(colour = 'gray33')+
@@ -242,13 +177,11 @@ pdeg <- ggplot(comps.a, aes(nobs, sri_degree))+
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm")) +
 	ylab("degree") + xlab("# of observations") +
 	ggtitle("A)")
-	# scale_colour_manual("", values = c("gray", "black", "gray33", 'blue'))
 
 
 pstr <- ggplot(comps.a, aes(nobs, sri_strength))+
 	geom_point(colour = 'gray33')+
 	geom_smooth(colour = 'black')+
-#	ylim(0,69)+
 	theme_bw()  + theme(
 		#panel.background =element_rect(colour = "black", fill=NA, size=1),
 		panel.border = element_blank(),
@@ -280,8 +213,6 @@ pbet <- ggplot(comps.a, aes(nobs, sri_Wbetweenness))+
 
 pdeg|pstr|pbet
 
-ggplot(comps.a, aes(nobs, sri_betweenness))+
-	geom_point()+
-	geom_smooth(colour = 'black')
+
 
 
