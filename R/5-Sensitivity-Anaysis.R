@@ -150,6 +150,39 @@ ggplot(comps, aes(nobs, sri_betweenness))+
 
 
 mets.a <-readRDS('data/derived-data/sensitivity-metsWalone.Rds')
+metscor <- dcast(mets.a, ego +period ~ nobs, value.var=c('sri_degree', 'sri_betweenness', 'sri_Wbetweenness', 'sri_strength'))
+
+metscor[,cor.test(sri_degree_5, sri_degree_10)]
+metscor[,cor.test(sri_degree_5, sri_degree_15)]
+metscor[,cor.test(sri_degree_5, sri_degree_30)]
+metscor[,cor.test(sri_degree_5, sri_degree_50)]
+
+metscor[,cor.test(sri_degree_10, sri_degree_15)]
+metscor[,cor.test(sri_degree_10, sri_degree_30)]
+metscor[,cor.test(sri_degree_10, sri_degree_50)]
+
+
+metscor[,cor.test(sri_betweenness_5, sri_betweenness_10)]
+metscor[,cor.test(sri_betweenness_5, sri_betweenness_15)]
+metscor[,cor.test(sri_betweenness_5, sri_betweenness_30)]
+metscor[,cor.test(sri_betweenness_5, sri_betweenness_50)]
+
+metscor[,cor.test(sri_betweenness_10, sri_betweenness_15)]
+metscor[,cor.test(sri_betweenness_10, sri_betweenness_30)]
+metscor[,cor.test(sri_betweenness_10, sri_betweenness_50)]
+
+
+metscor[,cor.test(sri_strength_5, sri_strength_10)]
+metscor[,cor.test(sri_strength_5, sri_strength_15)]
+metscor[,cor.test(sri_strength_5, sri_strength_30)]
+metscor[,cor.test(sri_strength_5, sri_strength_50)]
+
+metscor[,cor.test(sri_strength_10, sri_strength_15)]
+metscor[,cor.test(sri_strength_10, sri_strength_30)]
+metscor[,cor.test(sri_strength_10, sri_strength_50)]
+
+###
+
 comps.a <- mets.a[hyena %in% mets.a[nobs==5]$hyena]
 
 
@@ -174,6 +207,11 @@ comps.a.cor[,cor.test(sri_betweenness_5, sri_betweenness_50)]
 comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_15)]
 comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_30)]
 comps.a.cor[,cor.test(sri_betweenness_10, sri_betweenness_50)]
+
+
+comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_15)]
+comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_30)]
+comps.a.cor[,cor.test(sri_Wbetweenness_10, sri_Wbetweenness_50)]
 
 
 comps.a.cor[,cor.test(sri_strength_5, sri_strength_10)]
