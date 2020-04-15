@@ -18,13 +18,15 @@ DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
 DT.obs <- DT[iteration == 0]
 
 data.f.long.cd <- DT.obs[period=='cd' & !is.na(longevity_years)]
+data.f.long.cd[,'log.clan_size'] <- log(data.f.long.cd$clan_size)
+data.f.long.cd[,'log.nSession'] <- log(data.f.long.cd$nSession)
 
 l.cd.7 <- glmer(log(longevity_years) ~  scale(sri_degree)
 								+ scale(aggr_outdegree) + scale(aggr_indegree)
 								+ scale(affil_outdegree) + scale(affil_indegree)
-								+ ego_period_rank + offset(log(clan_size)) + offset(log(nSession)) + (1|mom),
+								+ ego_period_rank + offset(log.clan_size) + offset(log.nSession) + (1|mom),
 								data=data.f.long.cd, family = 'gaussian')
-p.lcd.7 <- ggpredict(l.cd.7)
+p.lcd.7 <- ggpredict(l.cd.7, ~affil_indegree)
 
 ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, longevity_years)) +
 	geom_point(colour = 'gray33') +
@@ -43,6 +45,9 @@ ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, longe
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
 
+ggplot(p.lcd.7, aes(x, predicted)) +
+	geom_line() +
+	geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .1)
 
 setEPS()
 postscript("Fig1.eps")
