@@ -691,3 +691,10 @@ mod.11.terms <- c("ego_period_rank", "scale(sri_strength)", "scale(aggr_outstren
 
 mod.13.terms <- c("ego_period_rank", "scale(sri_betweenness)", "scale(aggr_betweenness)", "scale(affil_betweenness)", "sd__(Intercept)")
 
+
+tidy(l.cd.7, effect = 'ran_pars')
+tidy(l.cd.11, effect = 'ran_pars')
+tidy(l.di.7, effect = 'ran_pars')
+tidy(l.di.13, effect = 'ran_pars')
+tidy(l.ad.7, effect = 'ran_pars')
+tidy(l.ad.13, effect = 'ran_pars')
