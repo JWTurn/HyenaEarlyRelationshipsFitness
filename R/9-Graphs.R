@@ -45,6 +45,68 @@ ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, longe
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
 
+ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_degree, longevity_years)) +
+	geom_point(colour = 'gray33') +
+	geom_smooth(method = 'lm', colour = 'black') +
+	xlab("Association degree") + ylab("Longevity (years)") +
+	# ggtitle("a) 60 days") +
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
+
+ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_betweenness, longevity_years)) +
+	geom_point(colour = 'gray33') +
+	geom_smooth(method = 'lm', colour = 'black') +
+	xlab("Association betweenness") + ylab("Longevity (years)") +
+	xlim(0, 130)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
+
+ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_betweenness, longevity_years)) +
+	geom_point(colour = 'gray33') +
+	geom_smooth(method = 'lm', colour = 'black') +
+	xlab("Affiliation betweenness") + ylab("Longevity (years)") +
+	xlim(0, 375)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
+
+
+ggplot(DT.obs[period=='cd' & !is.na(annual_rs)], aes(sri_degree, annual_rs)) +
+	geom_point(colour = 'gray33') +
+	geom_smooth(method = 'lm', colour = 'black') +
+	#ylim(0, 2.5)+
+	xlab("Association degree") + ylab("Average annual reproductive success") +
+	# ggtitle("a) 60 days") +
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
+
 ggplot(p.lcd.7, aes(x, predicted)) +
 	geom_line() +
 	geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .1)
