@@ -26,6 +26,9 @@ DT.obs.ses <- DT.obs[,.(ego, period, nSession.obs = nSession)]
 DT <-
 	merge(DT, DT.obs.ses, by = c('ego', 'period'))
 
+#### descriptive ####
+DT.obs[,.( mean =mean(affil_betweenness), se=se(affil_betweenness)), by = .(period)]
+
 ### correlations ####
 
 DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
