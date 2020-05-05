@@ -3,8 +3,7 @@
 # 13 Aug. 2019
 
 ### Packages ----
-# remotes::install_github('bbolker/broom.mixed')
-libs <- c('data.table', 'ggplot2')
+libs <- c('data.table', 'ggplot2', 'patchwork')
 lapply(libs, require, character.only = TRUE)
 
 
@@ -28,11 +27,11 @@ l.cd.7 <- glmer(log(longevity_years) ~  scale(sri_degree)
 								data=data.f.long.cd, family = 'gaussian')
 p.lcd.7 <- ggpredict(l.cd.7, ~affil_indegree)
 
-ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, longevity_years)) +
+ll.cd.indeg <- ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, log(longevity_years))) +
 	geom_point(colour = 'gray33') +
 	geom_smooth(method = 'lm', colour = 'black') +
 	xlim(0, 15)+
-	xlab("Affiliation in-degree") + ylab("Longevity (years)") +
+	xlab("Affiliation in-degree") + ylab("log(Longevity in years)") +
 	# ggtitle("a) 60 days") +
 	theme_bw()  + theme(
 		#panel.background =element_rect(colour = "black", fill=NA, size=1),
@@ -45,25 +44,11 @@ ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, longe
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
 
-ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_degree, longevity_years)) +
+ai.di.bet <- ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_betweenness, log(longevity_years))) +
 	geom_point(colour = 'gray33') +
 	geom_smooth(method = 'lm', colour = 'black') +
-	xlab("Association degree") + ylab("Longevity (years)") +
-	# ggtitle("a) 60 days") +
-	theme_bw()  + theme(
-		#panel.background =element_rect(colour = "black", fill=NA, size=1),
-		panel.border = element_blank(),
-		panel.grid.major = element_blank(),
-		panel.grid.minor = element_blank(),
-		axis.line = element_line(colour = "black", size = .7)) +
-	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
-	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
-				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
-
-ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_betweenness, longevity_years)) +
-	geom_point(colour = 'gray33') +
-	geom_smooth(method = 'lm', colour = 'black') +
-	xlab("Association betweenness") + ylab("Longevity (years)") +
+	xlab("Association betweenness") + ylab("log(Longevity in years)") +
+	ggtitle("A)") +
 	xlim(0, 130)+
 	theme_bw()  + theme(
 		#panel.background =element_rect(colour = "black", fill=NA, size=1),
@@ -75,11 +60,40 @@ ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_betweenness, long
 	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
-ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_betweenness, longevity_years)) +
+ll.di.bet <- ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_betweenness,log (longevity_years))) +
 	geom_point(colour = 'gray33') +
 	geom_smooth(method = 'lm', colour = 'black') +
-	xlab("Affiliation betweenness") + ylab("Longevity (years)") +
-	xlim(0, 375)+
+	xlab("Affiliation betweenness") + ylab("log(Longevity in years)") +
+	ggtitle("B)") +
+	xlim(0, 350)+
+	theme_bw()  + theme(
+		#panel.background =element_rect(colour = "black", fill=NA, size=1),
+		panel.border = element_blank(),
+		panel.grid.major = element_blank(),
+		panel.grid.minor = element_blank(),
+		axis.line = element_line(colour = "black", size = .7)) +
+	theme(plot.title=element_text(size=12,hjust = 0.05),axis.text.x = element_text(size=12), axis.title = element_text(size=15),axis.text.y = element_text(size=12)) +
+	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
+				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
+
+ai.di.bet|ll.di.bet
+
+
+
+
+setEPS()
+postscript("Fig1.eps")
+ll.cd.indeg
+dev.off()
+
+
+
+######
+ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(sri_degree, longevity_years)) +
+	geom_point(colour = 'gray33') +
+	geom_smooth(method = 'lm', colour = 'black') +
+	xlab("Association degree") + ylab("log(Longevity in years)") +
+	# ggtitle("a) 60 days") +
 	theme_bw()  + theme(
 		#panel.background =element_rect(colour = "black", fill=NA, size=1),
 		panel.border = element_blank(),
@@ -91,11 +105,12 @@ ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_betweenness, lo
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
 
-ggplot(DT.obs[period=='cd' & !is.na(annual_rs)], aes(sri_degree, annual_rs)) +
+ggplot(DT.obs[period=='adult' & !is.na(annual_rs)], aes(aggr_outdegree, annual_rs)) +
 	geom_point(colour = 'gray33') +
 	geom_smooth(method = 'lm', colour = 'black') +
-	#ylim(0, 2.5)+
-	xlab("Association degree") + ylab("Average annual reproductive success") +
+	ylim(0, 2.5)+
+	xlim(0, 50)+
+	xlab("Aggression out-degree") + ylab("Average annual reproductive success") +
 	# ggtitle("a) 60 days") +
 	theme_bw()  + theme(
 		#panel.background =element_rect(colour = "black", fill=NA, size=1),
@@ -110,15 +125,6 @@ ggplot(DT.obs[period=='cd' & !is.na(annual_rs)], aes(sri_degree, annual_rs)) +
 ggplot(p.lcd.7, aes(x, predicted)) +
 	geom_line() +
 	geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = .1)
-
-setEPS()
-postscript("Fig1.eps")
-plot(log(longevity_years)~affil_indegree, data.f.long.cd.noindegol, ylab = 'Log (Longevity in years)', xlab = 'Affiliation in-degree', bty= 'l')
-lines(xllindeg.cd.nol, yllindeg.cd.nol[,1], lwd = 4)
-# lines(xllindeg.cd.nol, yllindeg.cd.nol[,2], lty = 2)
-# lines(xllindeg.cd, yllindeg.cd[,3], lty = 2)
-dev.off()
-
 
 
 
