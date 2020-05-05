@@ -23,13 +23,12 @@ DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
 DT.obs <- DT[iteration == 0]
 
 DT.obs.ses <- DT.obs[,.(ego, period, nSession.obs = nSession)]
-DT <-
-	merge(DT, DT.obs.ses, by = c('ego', 'period'))
+DT <-merge(DT, DT.obs.ses, by = c('ego', 'period'))
 
 #### descriptive ####
 DT.obs[,.( mean =mean(affil_betweenness), se=se(affil_betweenness)), by = .(period)]
 
-### correlations ####
+### correlations means and SEs ####
 
 DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
 																alone, sri_degree, sri_strength, sri_betweenness,
@@ -37,17 +36,26 @@ DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
 																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
 View(cor(DT.cd))
 
-DT.di <- DT.obs[period=='postgrad', .(nSession, ego_period_rank,
+DT.cd.l <- melt(DT.cd)
+View(DT.cd.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
+
+DT.di <- DT.obs[period=='di', .(nSession, ego_period_rank,
 																			alone, sri_degree, sri_strength, sri_betweenness,
 																			aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
 																			affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
 View(cor(DT.di))
+
+DT.di.l <- melt(DT.di)
+View(DT.di.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
 
 DT.ad <- DT.obs[period=='adult', .(nSession, ego_period_rank,
 																	 alone, sri_degree, sri_strength, sri_betweenness,
 																	 aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
 																	 affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
 View(cor(DT.ad))
+
+DT.ad.l <- melt(DT.ad)
+View(DT.ad.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
 
 
 ### Best models and randomizations ----
