@@ -17,45 +17,13 @@ se <- function(x){
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
-DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
+DT <- readRDS(paste0(derived, 'SNfitnessData_2020-04-05.Rds'))
 
 # just the observed data
 DT.obs <- DT[iteration == 0]
 
 DT.obs.ses <- DT.obs[,.(ego, period, nSession.obs = nSession)]
 DT <-merge(DT, DT.obs.ses, by = c('ego', 'period'))
-
-#### descriptive ####
-DT.obs[,.( mean =mean(affil_betweenness), se=se(affil_betweenness)), by = .(period)]
-
-### correlations means and SEs ####
-
-DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
-																alone, sri_degree, sri_strength, sri_betweenness,
-																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
-																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
-View(cor(DT.cd))
-
-DT.cd.l <- melt(DT.cd)
-View(DT.cd.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
-
-DT.di <- DT.obs[period=='di', .(nSession, ego_period_rank,
-																			alone, sri_degree, sri_strength, sri_betweenness,
-																			aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
-																			affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
-View(cor(DT.di))
-
-DT.di.l <- melt(DT.di)
-View(DT.di.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
-
-DT.ad <- DT.obs[period=='adult', .(nSession, ego_period_rank,
-																	 alone, sri_degree, sri_strength, sri_betweenness,
-																	 aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
-																	 affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
-View(cor(DT.ad))
-
-DT.ad.l <- melt(DT.ad)
-View(DT.ad.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
 
 
 ### Best models and randomizations ----
@@ -69,7 +37,6 @@ mod.13.terms <- c("ego_period_rank", "scale(sri_betweenness)", "scale(aggr_betwe
 
 
 #### best models for longevity CD ####
-# check the VIF of the model
 l.cd.7 <- DT[period == 'cd' & iteration ==0,
 	glmer(
 		log(longevity_years) ~
@@ -139,8 +106,6 @@ DT.lcd.7.tab <- DT.lcd.7.tab[,.(`network type`, term, estimate, corEffect, randR
 
 
 
-# range(vif(l.cd.11))
-# tidy(l.cd.11)
 
 DT.lcd.11 <- DT[period == 'cd', {
 	m <- glmer(
@@ -190,9 +155,6 @@ DT.lcd.11.tab <- DT.lcd.11.tab[,.(`network type`, term, estimate, corEffect, ran
 
 
 #### best model for longevity DI ####
-# check_model(l.di.13)
-# range(vif(l.di.13))
-# tidy(l.di.13)
 
 DT.ldi.13 <- DT[period == 'di', {
 	m <- glmer(
@@ -239,9 +201,6 @@ DT.ldi.13.tab <- DT.ldi.13.tab[,.(`network type`, term, estimate, corEffect, ran
 
 
 
-# check_model(l.di.7)
-# range(vif(l.di.7))
-# tidy(l.di.7)
 
 DT.ldi.7 <- DT[period == 'di', {
 	m <- glmer(
@@ -290,9 +249,6 @@ DT.ldi.7.tab <- DT.ldi.7.tab[,.(`network type`, term, estimate, corEffect, randR
 
 
 #### best model for longevity Adult ####
-# check_model(l.ad.7)
-# range(vif(l.ad.7))
-# tidy(l.ad.7)
 
 DT.lad.7 <- DT[period == 'adult', {
 	m <- glmer(
@@ -340,9 +296,7 @@ DT.lad.7.tab <- DT.lad.7.tab[,.(`network type`, term, estimate, corEffect, randR
 
 
 
-# check_model(l.ad.13)
-# range(vif(l.ad.13))
-# tidy(l.ad.13)
+
 
 DT.lad.13 <- DT[period == 'adult', {
 	m <- glmer(
@@ -391,9 +345,7 @@ DT.lad.13.tab <- DT.lad.13.tab[,.(`network type`, term, estimate, corEffect, ran
 
 
 #### best models for ARS CD ####
-# check_model(a.cd.7)
-# range(vif(a.cd.7))
-# tidy(a.cd.7)
+
 
 DT.acd.7 <- DT[period == 'cd', {
 	m <- glmer(
@@ -440,9 +392,7 @@ DT.acd.7.tab$term <- factor(DT.acd.7.tab$term, levels = mod.7.terms, labels = c(
 DT.acd.7.tab <- DT.acd.7.tab[,.(`network type`, term, estimate, corEffect, randRange, Prand)]
 
 #### best models for ARS DI ####
-# check_model(a.di.7)
-# range(vif(a.di.7))
-# tidy(a.di.7)
+
 
 DT.adi.7 <- DT[period == 'di', {
 	m <- glmer(
@@ -490,9 +440,7 @@ DT.adi.7.tab <- DT.adi.7.tab[,.(`network type`, term, estimate, corEffect, randR
 
 
 #### best models for ARS Adult ####
-# check_model(a.ad.7)
-# range(vif(a.ad.7))
-# tidy(a.ad.7)
+
 
 DT.aad.7 <- DT[period == 'adult', {
 	m <- glmer(
