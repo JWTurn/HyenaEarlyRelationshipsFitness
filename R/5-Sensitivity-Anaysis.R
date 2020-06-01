@@ -164,11 +164,8 @@ comps.a <- merge(comps.a.cor[,.(ego, period)], mets.a, by=c('ego','period'))
 
 pdeg <- ggplot(comps.a, aes(nobs, sri_degree))+
 	geom_point()+
-	#geom_point(colour = 'gray33')+
-	#geom_smooth(colour = 'black')+
 	ylim(0,65)+
 	theme_bw()  + theme(
-		#panel.background =element_rect(colour = "black", fill=NA, size=1),
 		panel.border = element_blank(),
 		panel.grid.major = element_blank(),
 		panel.grid.minor = element_blank(),
@@ -182,10 +179,7 @@ pdeg <- ggplot(comps.a, aes(nobs, sri_degree))+
 
 pstr <- ggplot(comps.a, aes(nobs, sri_strength))+
 	geom_point()+
-	# geom_point(colour = 'gray33')+
-	# geom_smooth(colour = 'black')+
 	theme_bw()  + theme(
-		#panel.background =element_rect(colour = "black", fill=NA, size=1),
 		panel.border = element_blank(),
 		panel.grid.major = element_blank(),
 		panel.grid.minor = element_blank(),
@@ -199,11 +193,8 @@ pstr <- ggplot(comps.a, aes(nobs, sri_strength))+
 
 pbet <- ggplot(comps.a, aes(nobs, sri_Wbetweenness))+
 	geom_point()+
-	# geom_point(colour = 'gray33')+
-	# geom_smooth(colour = 'black')+
 	ylim(0,125)+
 	theme_bw()  + theme(
-		#panel.background =element_rect(colour = "black", fill=NA, size=1),
 		panel.border = element_blank(),
 		panel.grid.major = element_blank(),
 		panel.grid.minor = element_blank(),

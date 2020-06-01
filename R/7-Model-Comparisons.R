@@ -17,44 +17,53 @@ se <- function(x){
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
-# mets <- readRDS(paste0(derived, 'observed-random-metrics.Rds'))
-#
-# egos <- fread(paste0(raw, 'egos_filtered.csv'))
-#
-#
-# ### Merge ----
-# # Fix inconsistent periods
-# egos[, period := tolower(period)]
-# egos <- egos[,.(ego, period, ego_period_rank, mom, clan_size, annual_rs, longevity_years)]
-# mets[period == 'postgrad', period := 'di']
-#
-# # Merge
-# cols <- c('ego', 'period')
-# setkeyv(egos, cols)
-# setkeyv(mets, cols)
-#
-# DT <- merge(mets, egos, all.x = TRUE)
-# DT[, 7:23][is.na(DT[, 7:23])] <- 0
-# DT[,'alone'] <- DT$nAlone/DT$nSession
-# DT <- DT[order(iteration, ego),]
-
-#saveRDS(DT, paste0(derived, 'DT_obs_rands.Rds'))
-
-DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
+DT <- readRDS(paste0(derived, 'SNfitnessData_2020-04-05.Rds'))
 
 
 # just the observed data
 DT.obs <- DT[iteration == 0]
-#DT<-DT[nSession>=10]
+
+
+#### descriptive ####
+DT.obs[,.( mean =mean(affil_betweenness), se=se(affil_betweenness)), by = .(period)]
+
+### correlations means and SEs ####
+
+DT.cd <- DT.obs[period=='cd', .(nSession, ego_period_rank,
+																alone, sri_degree, sri_strength, sri_betweenness,
+																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.cd))
+
+DT.cd.l <- melt(DT.cd)
+View(DT.cd.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
+
+DT.di <- DT.obs[period=='di', .(nSession, ego_period_rank,
+																alone, sri_degree, sri_strength, sri_betweenness,
+																aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+																affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.di))
+
+DT.di.l <- melt(DT.di)
+View(DT.di.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
+
+DT.ad <- DT.obs[period=='adult', .(nSession, ego_period_rank,
+																	 alone, sri_degree, sri_strength, sri_betweenness,
+																	 aggr_outdegree, aggr_indegree, aggr_outstrength, aggr_instrength, aggr_betweenness,
+																	 affil_outdegree, affil_indegree, affil_outstrength, affil_instrength, affil_betweenness)]
+View(cor(DT.ad))
+
+DT.ad.l <- melt(DT.ad)
+View(DT.ad.l[, .(mean = mean(value), se = se(value)), by=.(variable)])
 
 
 # specific data for model comparisons
-data.f.long.cd <- subset(DT.obs, period == 'cd')
-data.f.long.di <- subset(DT.obs, period == 'di')
-data.f.long.ad <- subset(DT.obs, period == 'adult')
-data.f.ars.cd <- subset(DT.obs, period == 'cd')
-data.f.ars.di <- subset(DT.obs, period == 'di')
-data.f.ars.ad <- subset(DT.obs, period == 'adult')
+data.f.long.cd <- DT.obs[period=='cd' & !(is.na(longevity_years))]
+data.f.long.di <- DT.obs[period=='di' & !(is.na(longevity_years))]
+data.f.long.ad <- DT.obs[period=='adult' & !(is.na(longevity_years))]
+data.f.ars.cd <- DT.obs[period=='cd' & !(is.na(annual_rs))]
+data.f.ars.di <- DT.obs[period=='di' & !(is.na(annual_rs))]
+data.f.ars.ad <- DT.obs[period=='adult' & !(is.na(annual_rs))]
 
 ### Model comparisons ----
 
@@ -681,20 +690,3 @@ AIC.a.di <- as.data.frame(AICctab(a.di.full, a.di.1,a.di.2, a.di.3, a.di.4, a.di
 AIC.a.ad <- as.data.frame(AICctab(a.ad.full, a.ad.1, a.ad.2, a.ad.3, a.ad.4, a.ad.5, a.ad.6, a.ad.7, a.ad.8, a.ad.9, a.ad.10, a.ad.11, a.ad.12, a.ad.13))
 
 AIC.ars <- as.data.frame(AICctab(a.cd.7, a.di.7, a.ad.7))
-
-### Best models and randomizations ----
-mod.7.terms <- c("ego_period_rank", "scale(sri_degree)", "scale(aggr_outdegree)", "scale(aggr_indegree)",
-								 "scale(affil_outdegree)", "scale(affil_indegree)", "sd__(Intercept)")
-
-mod.11.terms <- c("ego_period_rank", "scale(sri_strength)", "scale(aggr_outstrength)", "scale(aggr_instrength)",
-								 "scale(affil_outstrength)", "scale(affil_instrength)", "sd__(Intercept)")
-
-mod.13.terms <- c("ego_period_rank", "scale(sri_betweenness)", "scale(aggr_betweenness)", "scale(affil_betweenness)", "sd__(Intercept)")
-
-
-tidy(l.cd.7, effect = 'ran_pars')
-tidy(l.cd.11, effect = 'ran_pars')
-tidy(l.di.7, effect = 'ran_pars')
-tidy(l.di.13, effect = 'ran_pars')
-tidy(l.ad.7, effect = 'ran_pars')
-tidy(l.ad.13, effect = 'ran_pars')
