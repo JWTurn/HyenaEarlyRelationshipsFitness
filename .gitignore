@@ -9,5 +9,5 @@ R/PrevCode/
 data/raw-data/
 data/derived-data/*
 !/data/derived-data/SNfitnessData_2020-04-05.Rds
-
+!/data/derived-data/SNfitnessData_2020-04-05.csv
 
