@@ -18,7 +18,7 @@ DT.obs <- DT[iteration == 0]
 
 ll.cd.indeg <- ggplot(DT.obs[period=='cd' & !is.na(longevity_years)], aes(affil_indegree, log(longevity_years))) +
 	geom_point(colour = 'gray33') +
-	geom_smooth(method = 'lm', colour = 'black') +
+	geom_smooth(method = 'lm', colour = 'black', se =F) +
 	xlim(0, 15)+
 	xlab("Affiliation in-degree") + ylab("log(Longevity in years)") +
 	theme_bw()  + theme(
@@ -62,9 +62,9 @@ ll.di.bet <- ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_be
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
 
+gsup <- ai.di.bet | ll.di.bet
 
-g <- ai.di.bet | ll.di.bet
-
+g <- ll.cd.indeg
 
 ggsave('graphics/figure-2.pdf', g)
 
