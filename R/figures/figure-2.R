@@ -61,13 +61,15 @@ ll.di.bet <- ggplot(DT.obs[period=='di' & !is.na(longevity_years)], aes(affil_be
 	theme(axis.text.x = element_text(margin=margin(10,10,10,10,"pt")),
 				axis.text.y = element_text(margin=margin(10,10,10,10,"pt")))+ theme(axis.ticks.length = unit(-0.25, "cm"))
 
-ai.di.bet|ll.di.bet
 
 
+g <- ai.di.bet | ll.di.bet
 
+
+ggsave('graphics/figure-2.pdf', g)
 
 setEPS()
-postscript("Fig1.eps")
+postscript("graphics/Fig1.eps")
 ll.cd.indeg
 dev.off()
 
