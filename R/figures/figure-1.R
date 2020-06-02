@@ -1,10 +1,11 @@
-### Flowchart figure
+### Figure 1 - Flowchart
 # Alec Robitaille
 
 ### Packages ----
 pkgs <- c(
 	'data.table',
 	'ggplot2',
+	'asnipe',
 	'patchwork',
 	'ggthemes',
 	'spatsoc',
@@ -77,15 +78,14 @@ gbiLs <- foreach(i = seq(1, nrow(focal))) %do% {
 					groupCol, idCol)
 }
 
-# Calculate TWI
-source('R/twi.R')
-twiLs <- foreach(g = gbiLs) %do% {
-	twi(g)
+# Calculate SRI
+sriLs <- foreach(g = gbiLs) %dopar% {
+	get_network(g, 'GBI', 'SRI')
 }
 
 # Generate graph and calculate network metrics
-assonets <- foreach(n = seq_along(twiLs)) %do% {
-	g <- graph.adjacency(twiLs[[n]], 'undirected',
+assonets <- foreach(n = seq_along(sriLs)) %do% {
+	g <- graph.adjacency(sriLs[[n]], 'undirected',
 											 diag = FALSE, weighted = TRUE)
 
 	w <- E(g)$weight
@@ -109,11 +109,11 @@ avgLs <- foreach(i = seq(1, nrow(focal))) %do% {
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
-	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 	merge(
 		avgLs[[i]],
-		twi,
+		sri,
 		by.x = c('aggressor', 'recip'),
 		by.y = c('Var1', 'Var2'),
 		all.x = TRUE
@@ -149,11 +149,11 @@ countLs <- foreach(i = seq(1, nrow(focal))) %do% {
 
 # Create edge list
 edgeLs <- foreach(i = seq(1, nrow(focal))) %do% {
-	twi <- data.table(melt(twiLs[[i]]), stringsAsFactors = FALSE)
-	twi[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
+	sri <- data.table(melt(sriLs[[i]]), stringsAsFactors = FALSE)
+	sri[, c('Var1', 'Var2') := lapply(.SD, as.character), .SDcols = c(1, 2)]
 	merge(
 		countLs[[i]],
-		twi,
+		sri,
 		by.x = c('ll_receiver', 'll_solicitor'),
 		by.y = c('Var1', 'Var2'),
 		all.x = TRUE
