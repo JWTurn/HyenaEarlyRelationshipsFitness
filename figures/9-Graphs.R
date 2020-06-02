@@ -11,7 +11,7 @@ lapply(libs, require, character.only = TRUE)
 raw <- 'data/raw-data/'
 derived <- 'data/derived-data/'
 
-DT <- readRDS(paste0(derived, 'DT_obs_rands.Rds'))
+DT <- readRDS(paste0(derived, 'SNfitnessData_2020-04-05.Rds'))
 
 # just the observed data
 DT.obs <- DT[iteration == 0]
