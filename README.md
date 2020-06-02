@@ -1,6 +1,8 @@
 
 ## Early life relationships matter: Social position during early life predicts fitness among female spotted hyenas
 
+[![DOI](https://zenodo.org/badge/268907300.svg)](https://zenodo.org/badge/latestdoi/268907300)
+
   - Authors:
       - [Julie W. Turner](https://www.julwturner.com)
       - [Alec L. Robitaille](http://robitalec.ca)
