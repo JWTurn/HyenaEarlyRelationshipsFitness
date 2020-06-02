@@ -45,7 +45,7 @@ selfocal <- 'mono'
 selfocaltitle <- 'Monopoly'
 
 ### Set theme ----
-pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
+pal <- c('#E69F00', '#56B4E9', '#009E73', '#F0E442')
 
 theme_set(theme_classic())
 theme_update(
@@ -237,7 +237,7 @@ focal[period == 'adult', period := 'Adult']
 								 aes(x = period_start)) +
 		geom_hline(
 			yintercept = 0,
-			color = "black",
+			color = 'black',
 			size = 0.3
 		) +
 		geom_segment(
@@ -264,7 +264,7 @@ focal[period == 'adult', period := 'Adult']
 			label = period_start
 		)) +
 		guides(color = FALSE) +
-		scale_color_tableau(palette = "Color Blind") +
+		scale_color_tableau(palette = 'Color Blind') +
 		scale_y_continuous(expand = c(0, 0.1)) +
 		scale_x_date(expand = c(0.1, 0)) +
 		theme(aspect.ratio = 0.13) +
@@ -316,5 +316,5 @@ gui <- image_read('graphics/flowchart-gui.png')
 img <- c(mono, gui)
 
 image_write(image_append(img, stack = TRUE),
-						path = "graphics/flowchart.pdf",
-						format = "pdf")
+						path = 'graphics/figure-1.pdf',
+						format = 'pdf')
