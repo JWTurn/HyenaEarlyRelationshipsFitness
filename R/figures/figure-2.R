@@ -67,10 +67,3 @@ gsup <- ai.di.bet | ll.di.bet
 g <- ll.cd.indeg
 
 ggsave('graphics/figure-2.pdf', g)
-
-setEPS()
-postscript("graphics/Fig2.eps")
-ll.cd.indeg
-dev.off()
-
-
