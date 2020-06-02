@@ -1,47 +1,44 @@
-hyena-spatsoc
-================
-Alec Robitaille
 
-## Project Structure
+## Early life relationships matter: Social position during early life predicts fitness among female spotted hyenas
 
-    .
-    ├── data
-    │   ├── derived-data
-    │   │   └── mean-mets-association.Rds
-    │   └── raw-data
-    │       ├── data_affiliations.csv
-    │       ├── data_aggressions.csv
-    │       ├── data_associations.csv
-    │       ├── data_egos.csv
-    │       ├── egos.csv
-    │       ├── lifeperiod.csv
-    │       ├── lifeperiods_aggressions_el.csv
-    │       ├── lifeperiods_ais_el.csv
-    │       ├── lifeperiods_clanlists.csv
-    │       ├── lifeperiods.csv
-    │       ├── lifeperiods_ll_el.csv
-    │       └── SNfitnessData_2019-03-04.csv
-    ├── lit
-    │   ├── 1-s2.0-S0003347219300119-main.pdf
-    │   └── BU-902-M.pdf
-    ├── R
-    │   ├── 1-Hyena-Association.R
-    │   ├── 2-Hyena-Affiliation.R
-    │   ├── 3-Hyena-Aggression.R
-    │   ├── egonet_rand.R
-    │   └── final_models.R
-    ├── hyena-spatsoc.Rproj
-    ├── README.md
-    └── README.Rmd
+  - Authors:
+      - [Julie W. Turner](https://www.julwturner.com)
+      - [Alec L. Robitaille](http://robitalec.ca)
+      - Patrick S. Bills
+      - [Kay E. Holekamp](https://www.holekamplab.org)
 
-## TODOs
+This repository contains the data and code accompanying the paper “Early
+life relationships matter: Social position during early life predicts
+fitness among female spotted hyenas”.
 
-``` bash
-grep -rni 'R/' -e 'TODO';
-grep -rni 'R/' -e 'NOTE';
-#> R/5-Association-Randomization.R:101: # TODO: add aggression
-#> R/5-Association-Randomization.R:124:     # TODO: add aggression
-#> R/5-Association-Randomization.R:137:     # TODO: add aggression
-#> R/egonet_rand.R:228:  # note this is inefficient and doubles memory requirement, but only ~ 100,000 datapoints right now
-#> R/egonet_rand.R:244:  # note the merge command takes just two dfs as a time
-```
+## Abstract
+
+1.  How social development in early life affects fitness remains poorly
+    understood.
+2.  Though there is growing evidence that early-life relationships can
+    affect fitness, little research has investigated how social
+    positions develop or whether there are particularly important
+    periods for social position development in an animal’s life history.
+    In long-lived species in particular, understanding the lasting
+    consequences of early-life social environments requires detailed,
+    long-term datasets.
+3.  Here we used a 25-year dataset to test whether social positions held
+    during early development predicted adult fitness. Specifically, we
+    quantified social position using three social network metrics:
+    degree, strength, and betweenness. We determined the social position
+    of each individual in three types of networks during each of three
+    stages of ontogeny to test whether they predict annual reproductive
+    success (ARS) or longevity among adult female spotted hyenas
+    (Crocuta crocuta).
+4.  The social positions occupied by juvenile hyenas did predict their
+    fitness, but the effects of social position on fitness measures
+    differed between stages of early development. Network metrics when
+    individuals were young adults better predicted ARS, but network
+    metrics for younger animals, particularly when youngsters were
+    confined to the communal den, better predicted longevity than did
+    metrics assessed during other stages of development.
+5.  Our study shows how multiple types of social bonds formed during
+    multiple stages of social development predict lifetime fitness
+    outcomes. We suggest that social bonds formed during specific phases
+    of development may be more important than others when considering
+    fitness outcomes.
