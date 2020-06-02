@@ -49,29 +49,32 @@ fitness among female spotted hyenas”.
 
 ## Data
 
-| variable           | description                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------------- |
-| ego                | focal female for analyses                                                                            |
-| period             | cd (communal den)                                                                                    |
-| ego\_period\_rank  | ego’s rank during that period                                                                        |
-| mom                | ego’s mother                                                                                         |
-| clan\_size         | number of individuals in the clan during stated period for that ego                                  |
-| nSession           | number of sessions the ego was observed in during that period                                        |
-| alone              | alone rate                                                                                           |
-| sri\_degree        | degree centrality of the ego during that period based on the association network (simple ratio index |
-| sri\_strength      | stength of the ego during that period based on the association network (simple ratio index           |
-| sri\_betweenness   | betweenness of the ego during that period based on the association network (simple ratio index       |
-| aggr\_outdegree    | out-degree centrality of the ego during that period based on the aggression network                  |
-| aggr\_indegree     | in-degree centrality of the ego during that period based on the aggression network                   |
-| aggr\_outstrength  | out-stength of the ego during that period based on the aggression network                            |
-| aggr\_instrength   | in-stength of the ego during that period based on the aggression network                             |
-| aggr\_betweenness  | betweenness of the ego during that period based on the aggression network                            |
-| affil\_outdegree   | out-degree centrality of the ego during that period based on the affiliation network                 |
-| affil\_indegree    | in-degree centrality of the ego during that period based on the affiliation network                  |
-| affil\_outstrength | out-stength of the ego during that period based on the affiliation network                           |
-| affil\_instrength  | in-stength of the ego during that period based on the affiliation network                            |
-| affil\_betweenness | betweenness of the ego during that period based on the affiliation network                           |
-| longevity\_years   | age in years when the ego died                                                                       |
-| annual\_rs         | annual reproductive success (ARS) for the ego                                                        |
-| iteration          | iteration of the randomizations                                                                      |
-| observed           | TRUE - the data comes from observations; FALSE - the data comes from randomizations                  |
+Descriptions of the variables in the data for
+analysis.
+
+| variable           | description                                                                                           |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| ego                | focal female for analyses                                                                             |
+| period             | cd (communal den)                                                                                     |
+| ego\_period\_rank  | ego’s rank during that period                                                                         |
+| mom                | ego’s mother                                                                                          |
+| clan\_size         | number of individuals in the clan during stated period for that ego                                   |
+| nSession           | number of sessions the ego was observed in during that period                                         |
+| alone              | alone rate                                                                                            |
+| sri\_degree        | degree centrality of the ego during that period based on the association network (simple ratio index) |
+| sri\_strength      | stength of the ego during that period based on the association network (simple ratio index )          |
+| sri\_betweenness   | betweenness of the ego during that period based on the association network (simple ratio index)       |
+| aggr\_outdegree    | out-degree centrality of the ego during that period based on the aggression network                   |
+| aggr\_indegree     | in-degree centrality of the ego during that period based on the aggression network                    |
+| aggr\_outstrength  | out-stength of the ego during that period based on the aggression network                             |
+| aggr\_instrength   | in-stength of the ego during that period based on the aggression network                              |
+| aggr\_betweenness  | betweenness of the ego during that period based on the aggression network                             |
+| affil\_outdegree   | out-degree centrality of the ego during that period based on the affiliation network                  |
+| affil\_indegree    | in-degree centrality of the ego during that period based on the affiliation network                   |
+| affil\_outstrength | out-stength of the ego during that period based on the affiliation network                            |
+| affil\_instrength  | in-stength of the ego during that period based on the affiliation network                             |
+| affil\_betweenness | betweenness of the ego during that period based on the affiliation network                            |
+| longevity\_years   | age in years when the ego died                                                                        |
+| annual\_rs         | annual reproductive success (ARS) for the ego                                                         |
+| iteration          | iteration of the randomizations                                                                       |
+| observed           | TRUE - the data comes from observations; FALSE - the data comes from randomizations                   |

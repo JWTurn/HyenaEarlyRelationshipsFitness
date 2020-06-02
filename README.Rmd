@@ -51,6 +51,7 @@ than others when considering fitness outcomes.
 
 
 ## Data
+Descriptions of the variables in the data for analysis.
 
 | variable          | description                                                                                           |
 |-------------------|-------------------------------------------------------------------------------------------------------|
@@ -61,9 +62,9 @@ than others when considering fitness outcomes.
 | clan_size         |  number of individuals in the clan during stated period for that ego                                  |
 | nSession          |  number of sessions the ego was observed in during that period                                        |
 | alone             |  alone rate                                                                                           |
-| sri_degree        |  degree centrality of the ego during that period based on the association network (simple ratio index |
-| sri_strength      |  stength of the ego during that period based on the association network (simple ratio index           |
-| sri_betweenness   |  betweenness of the ego during that period based on the association network (simple ratio index       |
+| sri_degree        |  degree centrality of the ego during that period based on the association network (simple ratio index)|
+| sri_strength      |  stength of the ego during that period based on the association network (simple ratio index )         |
+| sri_betweenness   |  betweenness of the ego during that period based on the association network (simple ratio index)      |
 | aggr_outdegree    |  out-degree centrality of the ego during that period based on the aggression network                  |
 | aggr_indegree     |  in-degree centrality of the ego during that period based on the aggression network                   |
 | aggr_outstrength  |  out-stength of the ego during that period based on the aggression network                            |
