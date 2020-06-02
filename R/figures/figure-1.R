@@ -41,8 +41,8 @@ groupCol <- 'group'
 idCol <- 'hyena'
 
 # Set focal individual
-selfocal <- 'gui'
-selfocaltitle <- 'Guinness'
+selfocal <- 'mono'
+selfocaltitle <- 'Monopoly'
 
 ### Set theme ----
 pal <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442")
@@ -79,7 +79,7 @@ gbiLs <- foreach(i = seq(1, nrow(focal))) %do% {
 }
 
 # Calculate SRI
-sriLs <- foreach(g = gbiLs) %dopar% {
+sriLs <- foreach(g = gbiLs) %do% {
 	get_network(g, 'GBI', 'SRI')
 }
 
@@ -178,7 +178,7 @@ nets <- rbindlist(lapply(c(assonets, aggrnets, affilnets),
 												 ggnetwork),
 									idcol = 'nm',
 									fill = TRUE)
-nets[, label := ifelse(vertex.names == selfocal, selfocal, ' ')]
+nets[, label := ifelse(name == selfocal, selfocal, ' ')]
 
 nets[, c('type', 'period') := tstrsplit(nm, '-')]
 
@@ -219,7 +219,7 @@ nets[type == 'Association', weightCut := cut(weight * 100, breaks = 4)]
 			color = ifelse(selfocal == 'mono', '#1b9e77', '#7570b3'),
 			shape = 19,
 			size = 4,
-			data = nets[vertex.names == selfocal]
+			data = nets[name == selfocal]
 		) +
 		theme_blank() +
 		facet_grid(type ~ period, switch = 'y') +
@@ -302,7 +302,7 @@ ACCC
 w <- 220
 h <- 0.66 * w
 ggsave(
-	filename = paste0('figures/flowchart-', selfocal, '.png'),
+	filename = paste0('graphics/flowchart-', selfocal, '.png'),
 	plot = fig,
 	width = w,
 	height = h,
@@ -311,9 +311,10 @@ ggsave(
 
 
 # Combine
-mono <- image_read('figures/flowchart-mono.png')
-gui <- image_read('figures/flowchart-gui.png')
+mono <- image_read('graphics/flowchart-mono.png')
+gui <- image_read('graphics/flowchart-gui.png')
 img <- c(mono, gui)
+
 image_write(image_append(img, stack = TRUE),
-						path = "figures/flowchart-i.png",
-						format = "png")
+						path = "graphics/flowchart.pdf",
+						format = "pdf")
