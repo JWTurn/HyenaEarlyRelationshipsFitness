@@ -69,7 +69,7 @@ g <- ll.cd.indeg
 ggsave('graphics/figure-2.pdf', g)
 
 setEPS()
-postscript("graphics/Fig1.eps")
+postscript("graphics/Fig2.eps")
 ll.cd.indeg
 dev.off()
 
