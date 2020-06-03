@@ -51,8 +51,10 @@ fitness among female spotted hyenas”.
 
 ## Data
 
-Descriptions of the variables in the data for
-analysis.
+Data included are the calculated social network metrics, randomizations,
+and other variables used in the models in scripts 7-8. Descriptions of
+the variables in the data for analysis are
+below.
 
 | variable           | description                                                                                           |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
